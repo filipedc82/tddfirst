@@ -16,10 +16,21 @@ class NewVisitorTest(unittest.TestCase):
 
         # He notices the page title mentioning Orders
         self.assertIn('Orders', self.browser.title)
+        header_text = self.browser.find_element_by_tag_name('h1').text
+        self.assertIn('Orders', header_text)
 
         # On the page there is a button for creating a new order
         self.
+
+
         # He hits the button to create a new order
+
+        # A new page opens with the title mentioning "Add new order"
+
+        # A text field is showing prompting to enter the customer name
+
+        #
+
 
         # On the page he finds a list of orders in a table. A new order appears
 
