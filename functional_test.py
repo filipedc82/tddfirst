@@ -1,25 +1,30 @@
 from selenium import webdriver
 import unittest
 
-class NewVisitorTest(unittest.TestCase):  #1
+class NewVisitorTest(unittest.TestCase):
 
-    def setUp(self):  #2
+    def setUp(self):
         self.browser = webdriver.Firefox()
         self.browser.implicitly_wait(3)
 
-    def tearDown(self):  #3
+    def tearDown(self):
         self.browser.quit()
 
-    def test_can_start_a_list_and_retrieve_it_later(self):  #4
-        # Edith has heard about a cool new online to-do app. She goes
-        # to check out its homepage
+    def test_can_add_a_new_order(self):
+        # Klaus opens the browser and goes to the home page
         self.browser.get('http://localhost:8000')
 
-        # She notices the page title and header mention to-do lists
-        self.assertIn('To-Do', self.browser.title)  #5
-        self.fail('Finish the test!')  #6
+        # He notices the page title mentioning Orders
+        self.assertIn('Orders', self.browser.title)
+        self.fail('Finish the test!')
 
-        # She is invited to enter a to-do item straight away
+        # On the page there is a button for creating a new order
 
-if __name__ == '__main__':  #7
-    unittest.main(warnings='ignore')  #8
+        # He hits the button to create a new order
+
+        # On the page he finds a list of orders in a table. A new order appears
+
+
+
+if __name__ == '__main__':
+    unittest.main(warnings='ignore')
