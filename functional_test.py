@@ -21,7 +21,8 @@ class NewVisitorTest(unittest.TestCase):
 
         # On the page there is a button for creating a new order
         create_button = self.browser.find_element_by_id('create_order_button')
-        self.assertEqual(create_button.get_attribute('text'),'Create new order')
+        self.assertEqual(create_button.get_attribute('type'),'button')
+        self.assertEqual(create_button.text,'Create new order')
         # He hits the button to create a new order
         create_button.click()
 
