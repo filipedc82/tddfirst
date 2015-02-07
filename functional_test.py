@@ -16,14 +16,14 @@ class NewVisitorTest(unittest.TestCase):
 
         # He notices the page title mentioning Orders
         self.assertIn('Orders', self.browser.title)
-        self.fail('Finish the test!')
 
         # On the page there is a button for creating a new order
-
+        self.
         # He hits the button to create a new order
 
         # On the page he finds a list of orders in a table. A new order appears
 
+        self.fail('Finish the test!')
 
 
 if __name__ == '__main__':
