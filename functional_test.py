@@ -14,6 +14,8 @@ class NewVisitorTest(unittest.TestCase):
         # Klaus opens the browser and goes to the home page
         self.browser.get('http://localhost:8000')
 
+        # TODO: He is redirected to the order list page
+
         # He notices the page title mentioning Orders
         self.assertIn('Orders', self.browser.title)
         header_text = self.browser.find_element_by_tag_name('h1').text
@@ -26,8 +28,7 @@ class NewVisitorTest(unittest.TestCase):
         self.browser.get(create_link.get_attribute('href'))
 
         # A new page opens with the title mentioning "Add new order"
-        url = self.browser.current_url
-        self.assertRegex(url,r'^/order/add/')
+        self.assertIn('Add order', self.browser.title)
 
         # A text field is showing prompting to enter the customer name
 
