@@ -1,5 +1,8 @@
+
 from selenium import webdriver
 import unittest
+import time
+
 
 class NewVisitorTest(unittest.TestCase):
 
@@ -12,7 +15,7 @@ class NewVisitorTest(unittest.TestCase):
 
     def test_can_add_a_new_order(self):
         # Klaus opens the browser and goes to the home page
-        self.browser.get('http://localhost:8000')
+        self.browser.get('http://localhost:8000/orders')
 
         # TODO: He is redirected to the order list page
 
@@ -31,15 +34,39 @@ class NewVisitorTest(unittest.TestCase):
         self.assertIn('Add order', self.browser.title)
 
         # A text field is showing prompting to enter the order no and customer name
-        order_no_field = self.browser.find_element_by_id('id_order_code')
+        order_no_field = self.browser.find_element_by_id('id_order_no')
         self.assertEqual(order_no_field.get_attribute('placeholder'), 'Enter Order Number')
-        #TODO: test existence of customer name field
+        customer_field = self.browser.find_element_by_id('id_customer')
+        self.assertEqual(customer_field.get_attribute('placeholder'), 'Customer')
 
+        # He types in BE/4711/215 for order no and MWH for customer and clicks the submit button
+        order_no_field.send_keys('BE/4711/215')
+        customer_field.send_keys('MWH')
+       #Todo: Add orderlines to the order
+        self.browser.find_element_by_id('id_submit_new_order_button').click()
 
-        #
+        # He is returned to the order list page with the new order showing in the list.
+        self.assertIn('Orders', self.browser.title)
+        table = self.browser.find_element_by_id('id_order_table')
+        cells = table.find_elements_by_tag_name('td')
 
+        self.assertTrue(
+            any(cell.text == 'MWH' for cell in cells)
+        )
+        self.assertTrue(
+            any(cell.text == 'BE/4711/215' for cell in cells)
+        )
 
-        # On the page he finds a list of orders in a table. A new order appears
+        # He reloads the page and still finds the same order.
+        self.browser.get('http://localhost:8000/orders')
+#        time.sleep(10)
+        self.assertTrue(
+            any(cell.text == 'MWH' for cell in cells)
+        )
+        self.assertTrue(
+            any(cell.text == 'BE/4711/215' for cell in cells)
+        )
+
 
         self.fail('Finish the test!')
 
