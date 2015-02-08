@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.http import HttpResponse
 from orderlist.models import *
 
@@ -9,8 +9,14 @@ def home_page(request):
 
 def order_list(request):
     if request.method == 'POST':
-        return render(request, 'order_list.html',
-                      {'order_no': request.POST['order_no'], 'customer': request.POST['customer']})
+        new_order = Order()
+        new_order.order_no = request.POST['order_no']
+        new_order.customer = request.POST['customer']
+        new_order.save()
+
+        return redirect('/orders/')
+
+
     elif request.method == 'GET':
         orders = Order.objects.all()
         context_dict = {'orders': orders}

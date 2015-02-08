@@ -55,8 +55,29 @@ class OrderListPageTest(TestCase):
         request.POST['order_no']='BE0815'
 
         response = order_list(request)
-        self.assertIn('A new Customer', response.content.decode())
-        self.assertIn('BE0815', response.content.decode())
+        self.assertEqual(Order.objects.count(),1)
+        new_Order = Order.objects.first()
+        self.assertEqual(new_Order.order_no, 'BE0815')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['location'], '/orders/')
+
+    def test_order_list_displays_orders(self):
+        first_order = Order()
+        first_order.order_no = "FirstOrderNo"
+        first_order.customer = "FirstCustomer"
+        first_order.save()
+
+        second_order = Order()
+        second_order.order_no = "2ndOrderNo"
+        second_order.customer = "2ndCustomer"
+        second_order.save()
+
+        request = HttpRequest()
+        request.method = 'GET'
+        response = order_list(request)
+        self.assertIn('FirstOrderNo', response.content.decode())
+
+
 
 class ModelTest(TestCase):
 

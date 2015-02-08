@@ -46,6 +46,7 @@ class NewVisitorTest(unittest.TestCase):
         self.browser.find_element_by_id('id_submit_new_order_button').click()
 
         # He is returned to the order list page with the new order showing in the list.
+        self.browser.get('http://localhost:8000/orders')
         self.assertIn('Orders', self.browser.title)
         table = self.browser.find_element_by_id('id_order_table')
         cells = table.find_elements_by_tag_name('td')
@@ -58,8 +59,10 @@ class NewVisitorTest(unittest.TestCase):
         )
 
         # He reloads the page and still finds the same order.
-        self.browser.get('http://localhost:8000/orders')
+        self.browser.get('http://localhost:8000/orders/')
 #        time.sleep(10)
+        table = self.browser.find_element_by_id('id_order_table')
+        cells = table.find_elements_by_tag_name('td')
         self.assertTrue(
             any(cell.text == 'MWH' for cell in cells)
         )
