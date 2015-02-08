@@ -30,7 +30,11 @@ class NewVisitorTest(unittest.TestCase):
         # A new page opens with the title mentioning "Add new order"
         self.assertIn('Add order', self.browser.title)
 
-        # A text field is showing prompting to enter the customer name
+        # A text field is showing prompting to enter the order no and customer name
+        order_no_field = self.browser.find_element_by_id('id_order_code')
+        self.assertEqual(order_no_field.get_attribute('placeholder'), 'Enter Order Number')
+        #TODO: test existence of customer name field
+
 
         #
 
