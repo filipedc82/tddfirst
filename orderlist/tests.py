@@ -21,6 +21,23 @@ class HomePageTest(TestCase):
         self.assertEqual(response.content.decode(), expected_html)
 
 
+class OrderDetailTest(TestCase):
+
+    def test_order_url_resolves_to_order_detail(self):
+        found = resolve('/orders/20/')
+        self.assertEqual(found.func, order_detail)
+
+
+    def test_order_detail_page_returns_correct_html(self):
+        request = HttpRequest()
+        request.method = 'GET'
+        order = Order()
+        order.order_no='abc123'
+        order.save()
+        response = order_detail(request, order.id)
+        expected_html = render_to_string('order_detail.html', {'order': order})
+        self.assertEqual(response.content.decode(), expected_html)
+
 class AddOrderPageTest(TestCase):
 
     def test_add_order_url_resolves_to_add_order_view(self):
@@ -59,7 +76,7 @@ class OrderListPageTest(TestCase):
         new_Order = Order.objects.first()
         self.assertEqual(new_Order.order_no, 'BE0815')
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response['location'], '/orders/')
+        self.assertEqual(response['location'], '/orders/'+str(new_Order.id)+'/')
 
     def test_order_list_displays_orders(self):
         first_order = Order()
