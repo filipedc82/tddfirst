@@ -8,7 +8,25 @@ urlpatterns = patterns('',
     # url(r'^blog/', include('blog.urls')),
     # url(r'^admin/', include(admin.site.urls)),
     url(r'^orders/$', 'orderlist.views.order_list', name='order_list'),
+    url(r'^orders/(?P<order_id>\d+)/$', 'orderlist.views.order_detail', name='order_detail'),
 
     url(r'^orders/add/$', 'orderlist.views.add_order', name='add_order'),
 
 )
+
+
+### firstDjango code without generic views
+# urlpatterns = patterns('',
+#     # ex: /myDjangoApp/
+#     url(r'^$', views.index, name='index'),
+#
+#     # ex: /myDjangoApp/5/
+#     url(r'^specifics/(?P<question_id>\d+)/$', views.detail, name='detail'),
+#
+#     # ex: /myDjangoApp/5/results/
+#     url(r'^(?P<question_id>\d+)/results/$', views.results, name='results'),
+#
+#     # ex: /myDjangoApp/5/vote/
+#     url(r'^(?P<question_id>\d+)/vote/$', views.vote, name='vote'),
+#
+# )
