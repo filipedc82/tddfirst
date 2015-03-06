@@ -1,6 +1,6 @@
 from django.core.urlresolvers import resolve
 from django.template.loader import render_to_string
-from django.test import TestCase
+from django.test import TestCase, Client
 from django.http import HttpRequest
 
 from orderlist.models import *
@@ -25,18 +25,28 @@ class OrderDetailTest(TestCase):
 
     def test_order_url_resolves_to_order_detail(self):
         found = resolve('/orders/20/')
-        self.assertEqual(found.func, order_detail)
+        self.assertEqual(found.view_name, 'order_detail')
 
 
     def test_order_detail_page_returns_correct_html(self):
-        request = HttpRequest()
-        request.method = 'GET'
         order = Order()
         order.order_no='abc123'
         order.save()
-        response = order_detail(request, order.id)
+        c = Client()
+        response = c.get('/orders/'+str(order.id)+'/')
         expected_html = render_to_string('order_detail.html', {'order': order})
         self.assertEqual(response.content.decode(), expected_html)
+
+    def test_order_detail_page_shows_new_order(self):
+        order = Order()
+        order.order_no = "4711"
+        order.customer = "Lego"
+        order.save()
+        c = Client()
+        response = c.get('/orders/'+str(order.id)+'/')
+        self.assertIn('4711', response.content.decode())
+        self.assertIn('Lego', response.content.decode())
+
 
 class AddOrderPageTest(TestCase):
 
@@ -47,36 +57,32 @@ class AddOrderPageTest(TestCase):
 
     def test_add_order_page_returns_correct_html(self):
         request = HttpRequest()
+        request.method = 'GET'
         response = add_order(request)
         expected_html = render_to_string('add_order.html')
         self.assertEqual(response.content.decode(), expected_html)
 
-
-class OrderListPageTest(TestCase):
-
-    def test_root_url_resolves_to_order_list_view(self):
-        found = resolve('/orders/')
-        self.assertEqual(found.func, order_list)
-
-    def test_order_list_page_returns_correct_html_GET(self):
-        request = HttpRequest()
-        request.method = 'GET'
-        response = order_list(request)
-        expected_html = render_to_string('order_list.html')
-        self.assertEqual(response.content.decode(), expected_html)
-
-    def test_order_list_page_can_handle_POST(self):
-        request = HttpRequest()
-        request.method = 'POST'
-        request.POST['customer']='A new Customer'
-        request.POST['order_no']='BE0815'
-
-        response = order_list(request)
+    def test_add_order_page_can_handle_POST(self):
+        c = Client()
+        response = c.post('/orders/add/' , {'order_no':'BE0815', 'customer':'A new Customer'})
         self.assertEqual(Order.objects.count(),1)
         new_Order = Order.objects.first()
         self.assertEqual(new_Order.order_no, 'BE0815')
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response['location'], '/orders/'+str(new_Order.id)+'/')
+        self.assertRedirects(response,'/orders/'+str(new_Order.id)+'/' )
+
+
+class OrderListPageTest(TestCase):
+
+    def test_orders_url_resolves_to_order_list_view(self):
+        found = resolve('/orders/')
+        self.assertEqual(found.view_name, 'order_list')
+
+    def test_order_list_page_returns_correct_html_GET(self):
+        c = Client()
+        response = c.get('/orders/')
+        expected_html = render_to_string('order_list.html')
+        self.assertEqual(response.content.decode(), expected_html)
 
     def test_order_list_displays_orders(self):
         first_order = Order()
@@ -89,11 +95,10 @@ class OrderListPageTest(TestCase):
         second_order.customer = "2ndCustomer"
         second_order.save()
 
-        request = HttpRequest()
-        request.method = 'GET'
-        response = order_list(request)
+        c = Client()
+        response = c.get('/orders/')
         self.assertIn('FirstOrderNo', response.content.decode())
-
+        self.assertIn('2ndCustomer', response.content.decode())
 
 
 class ModelTest(TestCase):

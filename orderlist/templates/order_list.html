@@ -1,0 +1,25 @@
+<html>
+    <head>
+        <title>Orders List</title>
+    </head>
+    <body>
+        <h1>Orders List</h1>
+
+        <a id="create_order_link" href="/orders/add">Create new order</a>
+        <br/>
+        <table id="id_order_table">
+            <tr>
+                <th>Customer</th>
+                <th>Order No</th>
+            </tr>
+             {% for order in object_list %}
+                 <tr>
+                    <td class="order"> {{ order }}</td>
+                    <td class="order"> {{ order.customer }}</td>
+                </tr>
+             {% endfor %}
+
+
+    </table>
+    </body>
+</html>

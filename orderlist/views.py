@@ -1,34 +1,35 @@
-from django.shortcuts import redirect, render,  get_object_or_404
+from django.shortcuts import redirect, render, get_object_or_404
 from django.http import HttpResponse
+from django.views import generic
 from orderlist.models import *
 
-# Create your views here.
+
+class OrderListView(generic.ListView):
+    model = Order
+    template_name = 'order_list.html'
+
+class OrderDetailView(generic.DetailView):
+    model = Order
+    template_name = 'order_detail.html'
+
+# def order_detail(request, order_id):
+#     order = get_object_or_404(Order, pk=order_id)
+#     context_dict = {'order': order}
+#     return render(request, 'order_detail.html', context_dict)
+
+
 def home_page(request):
     return render(request, 'home.html')
 
-
-def order_list(request):
+def add_order(request):
     if request.method == 'POST':
         new_order = Order()
         new_order.order_no = request.POST['order_no']
         new_order.customer = request.POST['customer']
         new_order.save()
-
         return redirect('/orders/'+str(new_order.id)+'/')
 
 
     elif request.method == 'GET':
-        orders = Order.objects.all()
-        context_dict = {'orders': orders}
-        return render(request, 'order_list.html', context_dict)
-
-def order_detail(request, order_id):
-    order = get_object_or_404(Order,pk=order_id)
-    print(order)
-    context_dict = {'order': order}
-    return render(request, 'order_detail.html', context_dict)
-
-
-def add_order(request):
-    return render(request, 'add_order.html')
+        return render(request, 'add_order.html')
 

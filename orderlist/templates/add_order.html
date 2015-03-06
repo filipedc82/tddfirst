@@ -1,0 +1,14 @@
+<html>
+    <head>
+        <title>Add order</title>
+    </head>
+    <body>
+        <h1>Add order</h1>
+    <form method="POST" action="/orders/add/">
+        {% csrf_token %}
+        <input name="order_no" id="order_no" placeholder="Enter Order Number" />
+        <input name="customer" id="customer" placeholder="Customer" />
+        <input type="submit" id="submit_new_order_button" value="Save new order"/>
+    </form>
+    </body>
+</html>
