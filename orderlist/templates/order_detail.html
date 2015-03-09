@@ -5,7 +5,27 @@
 
 {% block  page_content%}
 
-        Customer: {{ order.customer }}<br/>
-        Order No: {{ order.order_no }}<br/>
+    Customer: {{ order.customer }}<br/>
+    Order No: {{ order.order_no }}<br/>
+
+    <form action="/orders/{{ order.id }}/" method="POST">
+        <table class="table">
+            <tr>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th>Delivery Date</th>
+            </tr>
+            {% for orderline in order.orderline_set.all %}
+                 <tr>
+                    <td> {{ orderline.product }}</td>
+                    <td> {{ orderline.qty }}</td>
+                    <td> {{ orderline.unit_price }}</td>
+                    <td> {{ orderline.dlry_date }}</td>
+                </tr>
+            {% endfor %}
+            {{ orderLineForm.as_table }}
+        </table>
+    </form>
 
 {% endblock %}

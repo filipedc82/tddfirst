@@ -10,3 +10,11 @@ class Order(models.Model):
 
     def get_absolute_url(self):
         return reverse('order_detail', kwargs={'pk': self.pk})
+
+
+class OrderLine(models.Model):
+    order = models.ForeignKey(Order)
+    product = models.TextField(max_length=50)
+    qty = models.FloatField()
+    unit_price = models.FloatField()
+    dlry_date = models.DateField()

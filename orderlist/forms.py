@@ -6,7 +6,15 @@ class OrderForm(ModelForm):
         model = Order
         fields = '__all__'
         widgets = {
-            'order_no':TextInput(attrs={'placeholder':"Enter Order Number"}),
-            'customer':TextInput(attrs={'placeholder':"Customer"}),
+            'order_no':TextInput(attrs={'placeholder':"Enter Order Number", 'class':"form-control"}),
+            'customer':TextInput(attrs={'placeholder':"Customer", 'class':"form-control"}),
         }
 
+class OrderLineForm(ModelForm):
+    class Meta:
+        model = OrderLine
+        fields = '__all__'
+        # widgets = {
+        #      'order_no':TextInput(attrs={'placeholder':"Enter Order Number", 'class':"form-control"}),
+        #      'customer':TextInput(attrs={'placeholder':"Customer", 'class':"form-control"}),
+        #  }

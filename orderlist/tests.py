@@ -121,6 +121,12 @@ class OrderFormTest(TestCase):
         form = OrderForm(data={'order': ''})
         self.assertFalse(form.is_valid())
 
+class OrderLineFormTest(TestCase):
+
+    def test_line_form_validation_for_blank_items(self):
+        form = OrderLineForm(data={'product': ''})
+        self.assertFalse(form.is_valid())
+
 class ModelTest(TestCase):
 
     def test_can_save_and_retrieve_Order(self):

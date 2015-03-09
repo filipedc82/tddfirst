@@ -12,6 +12,7 @@ class OrderDetailView(generic.DetailView):
     model = Order
     template_name = 'order_detail.html'
 
+
 # def order_detail(request, order_id):
 #     order = get_object_or_404(Order, pk=order_id)
 #     context_dict = {'order': order}

@@ -37,7 +37,7 @@ class NewVisitorTest(StaticLiveServerTestCase):
         self.browser.get(create_link.get_attribute('href'))
 
         # A new page opens with the title mentioning "Add new order"
-        self.assertIn('Add order', self.browser.title)
+        self.assertIn('Add Order', self.browser.title)
 
         # A text field is showing prompting to enter the order no and customer name
         order_no_field = self.browser.find_element_by_id('id_order_no')
@@ -58,7 +58,7 @@ class NewVisitorTest(StaticLiveServerTestCase):
         add_line_button = self.browser.find_element_by_id('id_add_line_button')
         self.assertEqual(add_line_button.text, 'Add Order Line')
         add_line_button.click()
-        product_field = self.browser.find_element_by_id('id_product_field')
+        product_field = self.browser.find_element_by_id('id_product')
         self.assertEqual(product_field.get_attribute('placeholder'),'Enter Product')
         qty_field = self.browser.find_element_by_id('id_qty_field')
         self.assertEqual(qty_field.get_attribute('placeholder'),'Enter Qty')
