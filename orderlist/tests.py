@@ -2,9 +2,9 @@ from django.core.urlresolvers import resolve
 from django.template.loader import render_to_string
 from django.test import TestCase, Client
 from django.http import HttpRequest
-
 from orderlist.models import *
 from orderlist.views import *
+from orderlist.forms import *
 
 
 class HomePageTest(TestCase):
@@ -27,15 +27,17 @@ class OrderDetailTest(TestCase):
         found = resolve('/orders/20/')
         self.assertEqual(found.view_name, 'order_detail')
 
-
     def test_order_detail_page_returns_correct_html(self):
         order = Order()
         order.order_no='abc123'
         order.save()
         c = Client()
         response = c.get('/orders/'+str(order.id)+'/')
+        self.assertTemplateUsed(response, 'order_detail.html') #correct template
+        self.assertEqual(response.context['order'], order) # correct order in context
         expected_html = render_to_string('order_detail.html', {'order': order})
-        self.assertEqual(response.content.decode(), expected_html)
+        self.assertEqual(response.content.decode(), expected_html) # correct html
+
 
     def test_order_detail_page_shows_new_order(self):
         order = Order()
@@ -54,22 +56,36 @@ class AddOrderPageTest(TestCase):
         found = resolve('/orders/add/')
         self.assertEqual(found.func, add_order)
 
-
     def test_add_order_page_returns_correct_html(self):
         request = HttpRequest()
         request.method = 'GET'
         response = add_order(request)
-        expected_html = render_to_string('add_order.html')
+        self.assertTemplateUsed(response, 'add_order.html') #correct template
+        expected_html = render_to_string('add_order.html', {'form': OrderForm()})
         self.assertEqual(response.content.decode(), expected_html)
 
-    def test_add_order_page_can_handle_POST(self):
+    def test_add_order_page_renders_correct_form(self):
+        c = Client()
+        response = c.get('/orders/add/')
+        self.assertIsInstance(response.context['form'], OrderForm) 	#Sanity-check that your form is rendered, and its errors are displayed.
+
+    def test_add_order_page_can_handle_POST_correct(self):
         c = Client()
         response = c.post('/orders/add/' , {'order_no':'BE0815', 'customer':'A new Customer'})
         self.assertEqual(Order.objects.count(),1)
         new_Order = Order.objects.first()
         self.assertEqual(new_Order.order_no, 'BE0815')
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response,'/orders/'+str(new_Order.id)+'/' )
+        self.assertRedirects(response,'/orders/')
+
+    def test_add_order_page_can_handle_POST_incorrect(self):
+        c = Client()
+        response = c.post('/orders/add/' , {'order_no':'', 'customer':''})
+        self.assertEqual(Order.objects.count(),0)
+        self.assertEqual(response.status_code, 200)
+
+
+
 
 
 class OrderListPageTest(TestCase):
@@ -100,6 +116,13 @@ class OrderListPageTest(TestCase):
         self.assertIn('FirstOrderNo', response.content.decode())
         self.assertIn('2ndCustomer', response.content.decode())
 
+
+class OrderFormTest(TestCase):
+
+    def test_form_validation_for_blank_items(self):
+        form = OrderForm(data={'order': ''})
+        self.assertFalse(form.is_valid())
+        self.fail(form.as_p())
 
 class ModelTest(TestCase):
 

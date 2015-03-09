@@ -14,8 +14,8 @@
             </tr>
              {% for order in object_list %}
                  <tr>
-                    <td class="order"> {{ order }}</td>
                     <td class="order"> {{ order.customer }}</td>
+                    <td class="order"> {{ order.order_no }}</td>
                 </tr>
              {% endfor %}
 

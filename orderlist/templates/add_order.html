@@ -4,11 +4,11 @@
     </head>
     <body>
         <h1>Add order</h1>
-    <form method="POST" action="/orders/add/">
+    <form action="/orders/add/" method="POST">
         {% csrf_token %}
-        <input name="order_no" id="order_no" placeholder="Enter Order Number" />
-        <input name="customer" id="customer" placeholder="Customer" />
-        <input type="submit" id="submit_new_order_button" value="Save new order"/>
-    </form>
+        {{ form }}
+    <input type="submit" value="Save Order" />
+</form>
+
     </body>
 </html>
