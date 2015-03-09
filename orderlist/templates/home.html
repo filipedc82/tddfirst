@@ -1,11 +1,12 @@
-<html>
-    <head>
-        <title>Welcome</title>
-    </head>
-    <body>
-        <h1>Main Menut</h1>
-        <a id="order_list_link" href="/orders/">See order list</a><br/>
+{% extends 'base.html' %}
+
+{% block  title_text%} Welcome{% endblock %}
+{% block  header_text%} Main Menu{% endblock %}
+
+
+{% block  page_content%}
+       <a id="order_list_link" href="/orders/">See order list</a><br/>
 
         <a id="create_order_link" href="/orders/add">Create new order</a>
-    </body>
-</html>
+{% endblock %}
+

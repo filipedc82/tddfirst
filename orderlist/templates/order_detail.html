@@ -1,13 +1,11 @@
-<html>
-    <head>
-        <title>Order {{order.order_no}}</title>
-    </head>
-    <body>
-        <h1>Order details </h1>
+{% extends 'base.html' %}
+
+{% block  title_text%} Order {{order.order_no}}{% endblock %}
+{% block  header_text%} Order details {% endblock %}
+
+{% block  page_content%}
 
         Customer: {{ order.customer }}<br/>
         Order No: {{ order.order_no }}<br/>
 
-
-    </body>
-</html>
+{% endblock %}

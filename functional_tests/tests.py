@@ -1,4 +1,5 @@
 from django.test import LiveServerTestCase
+from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium import webdriver
 import unittest
 import time
@@ -6,7 +7,7 @@ from selenium.webdriver.common.keys import Keys
 from django.test.utils import override_settings
 
 @override_settings(DEBUG=True)
-class NewVisitorTest(LiveServerTestCase):
+class NewVisitorTest(StaticLiveServerTestCase):
 
     def setUp(self):
         self.browser = webdriver.Firefox()
@@ -17,20 +18,22 @@ class NewVisitorTest(LiveServerTestCase):
         self.browser.quit()
 
     def test_can_add_a_new_order(self):
-        # Klaus opens the browser and goes to the home page
+        # Klaus opens the browser and goes to the orders page
         self.browser.get(self.live_server_url+ "/orders")
+        self.browser.set_window_size(1024, 768)
 
-        # TODO: He is redirected to the order list page
 
-        # He notices the page title mentioning Orders
+        # He notices the page title Order List and the styled page
         self.assertIn('Orders', self.browser.title)
         header_text = self.browser.find_element_by_tag_name('h1').text
         self.assertIn('Orders', header_text)
+        self.assertGreater(self.browser.find_element_by_tag_name('h1').location['x'], 10)
+
 
         # On the page there is a link for creating a new order
         create_link = self.browser.find_element_by_id('create_order_link')
         self.assertEqual(create_link.text,'Create new order')
-        # He hits the button to create a new order
+        # He clicks the link to create a new order
         self.browser.get(create_link.get_attribute('href'))
 
         # A new page opens with the title mentioning "Add new order"
@@ -51,7 +54,7 @@ class NewVisitorTest(LiveServerTestCase):
         self.assertIn('BE/4711/215', self.browser.title)
 
 
-        #He clicks the Button "Add Order Line" and Input Fields for Product, Qty, Price, and Date appear.
+        #He clicks the Button "Add Order Line" and Input Fields for Product, Qty, Price, and Date appear on a new page.
         add_line_button = self.browser.find_element_by_id('id_add_line_button')
         self.assertEqual(add_line_button.text, 'Add Order Line')
         add_line_button.click()

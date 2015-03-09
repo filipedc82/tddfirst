@@ -25,8 +25,8 @@ def add_order(request):
         form = OrderForm(request.POST)
 
         if form.is_valid():
-            form.save(commit=True)
-            return redirect('/orders/')#+str(new_order.id)+'/')
+            new_order = form.save(commit=True)
+            return redirect('/orders/'+str(new_order.id)+'/')
 
         else:
             print(form.errors)

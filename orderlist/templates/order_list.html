@@ -1,25 +1,24 @@
-<html>
-    <head>
-        <title>Orders List</title>
-    </head>
-    <body>
-        <h1>Orders List</h1>
+{% extends 'base.html' %}
 
+{% block  title_text%} Orders List{% endblock %}
+{% block  header_text%} Orders List {% endblock %}
+
+{% block  page_content%}
         <a id="create_order_link" href="/orders/add">Create new order</a>
         <br/>
-        <table id="id_order_table">
+        <table id="id_order_table" class="table">
             <tr>
                 <th>Customer</th>
                 <th>Order No</th>
             </tr>
              {% for order in object_list %}
                  <tr>
-                    <td class="order"> {{ order.customer }}</td>
-                    <td class="order"> {{ order.order_no }}</td>
+                    <td> {{ order.customer }}</td>
+                    <td> <a href="/orders/{{ order.id }}/">{{ order.order_no }}</a></td>
                 </tr>
              {% endfor %}
 
 
-    </table>
-    </body>
-</html>
+        </table>
+
+ {% endblock %}

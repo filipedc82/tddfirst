@@ -76,16 +76,13 @@ class AddOrderPageTest(TestCase):
         new_Order = Order.objects.first()
         self.assertEqual(new_Order.order_no, 'BE0815')
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response,'/orders/')
+        self.assertRedirects(response,'/orders/'+str(new_Order.id)+'/')
 
     def test_add_order_page_can_handle_POST_incorrect(self):
         c = Client()
         response = c.post('/orders/add/' , {'order_no':'', 'customer':''})
         self.assertEqual(Order.objects.count(),0)
         self.assertEqual(response.status_code, 200)
-
-
-
 
 
 class OrderListPageTest(TestCase):
@@ -117,12 +114,12 @@ class OrderListPageTest(TestCase):
         self.assertIn('2ndCustomer', response.content.decode())
 
 
+
 class OrderFormTest(TestCase):
 
     def test_form_validation_for_blank_items(self):
         form = OrderForm(data={'order': ''})
         self.assertFalse(form.is_valid())
-        self.fail(form.as_p())
 
 class ModelTest(TestCase):
 
