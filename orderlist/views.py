@@ -1,4 +1,4 @@
-from django.shortcuts import redirect, render, get_object_or_404
+from django.shortcuts import redirect, render, get_object_or_404, render_to_response
 from django.http import HttpResponse
 from django.views import generic
 from orderlist.models import *
@@ -12,13 +12,28 @@ class OrderDetailView(generic.DetailView):
     model = Order
     template_name = 'order_detail.html'
 
+    def get_context_data(self, **kwargs):
+        context = super(OrderDetailView, self).get_context_data(**kwargs)
+        if 'orderLineForm' not in context:
+            ol = OrderLine(order=context.get('order'))
+            context['orderLineForm'] = OrderLineForm(instance=ol)
+        return context
+
+    def post(self, *args, **kwargs):
+        olform = OrderLineForm(self.request.POST)
+        if olform.is_valid():
+            new_order_line = olform.save(commit=True)
+            return redirect('/orders/'+str(self.request.POST.get('order'))+'/')
+        else:
+            print(olform.errors)
+        return self.get(self.request)
+
+
 
 # def order_detail(request, order_id):
 #     order = get_object_or_404(Order, pk=order_id)
 #     context_dict = {'order': order}
 #     return render(request, 'order_detail.html', context_dict)
-
-
 
 
 def add_order(request):
@@ -31,7 +46,6 @@ def add_order(request):
 
         else:
             print(form.errors)
-
     else:
         form = OrderForm()
     return render(request, 'add_order.html', {'form':form})
