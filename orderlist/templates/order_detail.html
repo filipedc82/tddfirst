@@ -4,13 +4,15 @@
 {% block  header_text%} Order details {% endblock %}
 
 {% block  page_content%}
+    <a id="order_list_link" href="/orders/">Back to Order List</a>
+
 
     Customer: {{ order.customer }}<br/>
     Order No: {{ order.order_no }}<br/>
 
     <form action="/orders/{{ order.id }}/" method="POST" class="form-inline">
         {% csrf_token %}
-        <table class="table">
+        <table class="table" id="id_order_line_table">
             <tr>
                 <th>Product</th>
                 <th>Quantity</th>

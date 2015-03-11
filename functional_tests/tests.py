@@ -5,8 +5,33 @@ import unittest
 import time
 from selenium.webdriver.common.keys import Keys
 from django.test.utils import override_settings
+from orderlist.models import *
 
-@override_settings(DEBUG=True)
+@override_settings(DEBUG=True)\
+
+def createTestOrder():
+    order = Order()
+    order.order_no = str(Order.objects.count()+4711)
+    order.customer = "Lego"
+    order.save()
+    ol1 = OrderLine()
+    ol1.order = order
+    ol1.dlry_date = '2015-05-05'
+    ol1.product = 'anotherGuide'
+    ol1.unit_price = 10.0
+    ol1.qty = 200
+    ol1.save()
+    ol2 = OrderLine()
+    ol2.order = order
+    ol2.dlry_date = '2015-05-10'
+    ol2.product = 'anotherGuide2'
+    ol2.unit_price = 12.0
+    ol2.qty = 300
+    ol2.save()
+    return order
+
+
+
 class NewVisitorTest(StaticLiveServerTestCase):
 
     def setUp(self):
@@ -16,6 +41,17 @@ class NewVisitorTest(StaticLiveServerTestCase):
 
     def tearDown(self):
         self.browser.quit()
+
+
+
+
+
+    def test_addOrder(self):
+        o1 = createTestOrder()
+        print(o1.order_no)
+        o2 = createTestOrder()
+        print(o2.order_no)
+        self.fail()
 
     def test_can_add_a_new_order(self):
         # Klaus opens the browser and goes to the orders page
@@ -54,17 +90,14 @@ class NewVisitorTest(StaticLiveServerTestCase):
         self.assertIn('BE/4711/215', self.browser.title)
 
 
-        #He clicks the Button "Add Order Line" and Input Fields for Product, Qty, Price, and Date appear on a new page.
-        add_line_button = self.browser.find_element_by_id('id_add_line_button')
-        self.assertEqual(add_line_button.text, 'Add Order Line')
-        add_line_button.click()
+        #He sees Input Fields for Product, Qty, Price, and Delivery Date .
         product_field = self.browser.find_element_by_id('id_product')
         self.assertEqual(product_field.get_attribute('placeholder'),'Enter Product')
-        qty_field = self.browser.find_element_by_id('id_qty_field')
+        qty_field = self.browser.find_element_by_id('id_qty')
         self.assertEqual(qty_field.get_attribute('placeholder'),'Enter Qty')
-        price_field = self.browser.find_element_by_id('id_price_field')
+        price_field = self.browser.find_element_by_id('id_unit_price')
         self.assertEqual(price_field.get_attribute('placeholder'),'Enter Unit Price')
-        dlrydate_field = self.browser.find_element_by_id('id_dlrydate_field')
+        dlrydate_field = self.browser.find_element_by_id('id_dlry_date')
         self.assertEqual(dlrydate_field.get_attribute('placeholder'),'Enter Delivery Date')
 
         # He enters the following data "75.21.211", 200, 50.60, 2015-05-05
@@ -74,13 +107,24 @@ class NewVisitorTest(StaticLiveServerTestCase):
         dlrydate_field.send_keys('2015-05-05')
 
         # He clicks the button "Save Order Line". The entered data appears in a table below the Order header.
+        self.browser.find_element_by_id('id_submit_new_order_line_button').click()
 
+        self.assertIn('BE/4711/215', self.browser.title)
+        cells = self.browser.find_element_by_id('id_order_line_table').find_elements_by_tag_name('td')
+        self.assertTrue(
+            any(cell.text == '75.21.211' for cell in cells)
+        )
+        self.assertTrue(
+            any(cell.text == '50.6' for cell in cells)
+        )
 
+        # He is returns to the order list page using the link.
+        create_link = self.browser.find_element_by_id('order_list_link')
+        self.assertEqual(create_link.text,'Back to Order List')
+        self.browser.get(create_link.get_attribute('href'))
 
+        #The new order shows in the list
 
-
-
-        # He is returned to the order list page with the new order showing in the list.
         self.assertIn('Orders', self.browser.title)
         table = self.browser.find_element_by_id('id_order_table')
         cells = table.find_elements_by_tag_name('td')
@@ -104,9 +148,5 @@ class NewVisitorTest(StaticLiveServerTestCase):
             any(cell.text == 'BE/4711/215' for cell in cells)
         )
 
-
         self.fail('Finish the test!')
 
-#
-#if __name__ == '__main__':
-#    unittest.main(warnings='ignore')

@@ -31,7 +31,7 @@ class OrderDetailView(generic.DetailView):
             new_request.method = 'GET'
             new_request.path = '/orders/'+str(self.request.POST.get('order'))+'/'
             new_request.GET['orderLineForm']=olform
-            #todo: Why does it not display errors on screen!
+            #todo: Why does it not display errors on screen?
             return self.get(new_request, {'orderLineForm':olform})
 
 
