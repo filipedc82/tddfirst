@@ -1,5 +1,5 @@
 from django.shortcuts import redirect, render, get_object_or_404, render_to_response
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpRequest
 from django.views import generic
 from orderlist.models import *
 from orderlist.forms import *
@@ -14,10 +14,11 @@ class OrderDetailView(generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(OrderDetailView, self).get_context_data(**kwargs)
-        if 'orderLineForm' not in context:
-            ol = OrderLine(order=context.get('order'))
-            context['orderLineForm'] = OrderLineForm(instance=ol)
+        ol = OrderLine(order=context.get('order'))
+        context['orderLineForm'] = OrderLineForm(instance=ol)
         return context
+
+
 
     def post(self, *args, **kwargs):
         olform = OrderLineForm(self.request.POST)
@@ -26,7 +27,12 @@ class OrderDetailView(generic.DetailView):
             return redirect('/orders/'+str(self.request.POST.get('order'))+'/')
         else:
             print(olform.errors)
-        return self.get(self.request)
+            new_request = HttpRequest()
+            new_request.method = 'GET'
+            new_request.path = '/orders/'+str(self.request.POST.get('order'))+'/'
+            new_request.GET['orderLineForm']=olform
+            #todo: Why does it not display errors on screen!
+            return self.get(new_request, {'orderLineForm':olform})
 
 
 

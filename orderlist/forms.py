@@ -1,4 +1,4 @@
-from django.forms import Form, ModelForm, CharField, TextInput, Select, HiddenInput
+from django.forms import Form, ModelForm, CharField, TextInput, Select, HiddenInput, DateInput
 from orderlist.models import *
 
 class OrderForm(ModelForm):
@@ -17,5 +17,6 @@ class OrderLineForm(ModelForm):
         widgets = {
                 'order': HiddenInput(),
                 'product': TextInput(attrs={'placeholder':"Enter Product", 'class':"form-control"}),
+                'dlry_date': DateInput(attrs={'class':"form-control",}),
         #      'customer':TextInput(attrs={'placeholder':"Customer", 'class':"form-control"}),
         }
