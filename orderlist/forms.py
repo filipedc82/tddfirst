@@ -22,3 +22,7 @@ class OrderLineForm(ModelForm):
                 'dlry_date': DateInput(attrs={'placeholder':"Enter Delivery Date",'class':"form-control",}),
         #      'customer':TextInput(attrs={'placeholder':"Customer", 'class':"form-control"}),
         }
+
+class OrderLineSelectForm(Form):
+    pass
+#Todo: Write form to select orderlines for Delivery

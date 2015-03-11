@@ -8,6 +8,15 @@ class OrderListView(generic.ListView):
     model = Order
     template_name = 'order_list.html'
 
+class DeliveryListView(generic.ListView):
+    model = Delivery
+    template_name = 'delivery_list.html'
+
+
+class DeliveryDetailView(generic.DetailView):
+    model = Delivery
+    template_name='delivery_detail.html'
+
 class OrderDetailView(generic.DetailView):
     model = Order
     template_name = 'order_detail.html'
@@ -40,6 +49,9 @@ class OrderDetailView(generic.DetailView):
 #     order = get_object_or_404(Order, pk=order_id)
 #     context_dict = {'order': order}
 #     return render(request, 'order_detail.html', context_dict)
+
+def add_delivery(request):
+    return render(request, 'add_delivery.html')
 
 
 def add_order(request):

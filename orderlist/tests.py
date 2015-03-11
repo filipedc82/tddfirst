@@ -9,7 +9,7 @@ from orderlist.forms import *
 
 def createTestOrder():
     order = Order()
-    order.order_no = "4711"
+    order.order_no = str(Order.objects.count()+4811)
     order.customer = "Lego"
     order.save()
     return order
@@ -22,6 +22,27 @@ def createTestOrderLine(my_order):
     ol.unit_price = 10.0
     ol.qty = 200
     ol.save()
+    return ol
+
+def createTestDelivery():
+    dlry = Delivery()
+    dlry.dlry_no = str(Delivery.objects.count()+815)
+    dlry.recipient = "Lego"
+    dlry.sender = "DCA"
+    dlry.dispatch_date = "2015-04-05"
+    dlry.save()
+    print(str(dlry.dlry_no))
+    return dlry
+
+def createTestDeliveryLine(my_dlry):
+    dl = DeliveryLine()
+    dl.delivery = my_dlry
+    dl.product = 'anotherGuide'
+    dl.qty = 150
+    ol = createTestOrderLine(createTestOrder())
+    dl.order_line = ol
+    dl.save()
+    return dl
 
 class HomePageTest(TestCase):
 
@@ -35,6 +56,78 @@ class HomePageTest(TestCase):
         response = home_page(request)
         expected_html = render_to_string('home.html')
         self.assertEqual(response.content.decode(), expected_html)
+
+class DeliveryListPageTest(TestCase):
+
+    def test_deliveries_url_resolves_to_deliveries_list_view(self):
+        found = resolve('/deliveries/')
+        self.assertEqual(found.view_name, 'delivery_list')
+
+    def test_delivery_list_page_returns_correct_html_GET(self):
+        c = Client()
+        response = c.get('/deliveries/')
+        expected_html = render_to_string('delivery_list.html')
+        self.assertEqual(response.content.decode(), expected_html)
+
+    def test_order_list_displays_orders(self):
+        createTestDelivery()
+        createTestDelivery()
+        c = Client()
+        response = c.get('/deliveries/')
+        self.assertIn('Lego', response.content.decode())
+        self.assertIn('DCA', response.content.decode())
+        self.assertIn('815', response.content.decode())
+        self.assertIn('816', response.content.decode())
+
+class DeliveryDetailTest(TestCase):
+
+    def test_delivery_url_resolves_to_delivery_detail(self):
+        found = resolve('/deliveries/20/')
+        self.assertEqual(found.view_name, 'delivery_detail')
+
+    def test_delivery_detail_page_returns_correct_html(self):
+        delivery = createTestDelivery()
+        c = Client()
+        response = c.get('/deliveries/'+str(delivery.id)+'/')
+        self.assertTemplateUsed(response, 'delivery_detail.html') #correct template
+        self.assertEqual(response.context['delivery'], delivery) # correct delivery in context
+        expected_html = render_to_string('delivery_detail.html', {'delivery': delivery})
+        #self.assertEqual(response.content.decode(), expected_html) # correct html
+
+    def test_delivery_detail_page_shows_new_delivery(self):
+        delivery = createTestDelivery()
+        c = Client()
+        response = c.get('/deliveries/'+str(delivery.id)+'/')
+        self.assertIn('DCA', response.content.decode())
+        self.assertIn('Lego', response.content.decode())
+
+    def test_delivery_detail_page_shows_delivery_line(self):
+        delivery = createTestDelivery()
+        dl = createTestDeliveryLine(delivery)
+        c = Client()
+        response = c.get('/deliveries/'+str(delivery.id)+'/')
+        self.assertIn(dl.product, response.content.decode())
+        self.assertIn(dl.order_line.order.order_no, response.content.decode())
+
+class DeliveryAddPageTest(TestCase):
+
+    def test_add_delivery_url_resolves_to_add_delivery_view(self):
+        found = resolve('/deliveries/add/')
+        self.assertEqual(found.func, add_delivery)
+
+    def test_add_delivery_page_returns_correct_html(self):
+        request = HttpRequest()
+        request.method = 'GET'
+        #response = add_delivery(request)
+        c = Client()
+        o = createTestOrder()
+        ol = createTestOrderLine(o)
+        ol_select_form = OrderLineSelectForm({'orderLine': ol})
+        response = c.get('/deliveries/add/')
+        self.assertTemplateUsed(response, 'add_delivery.html')  # correct template
+        expected_html = render_to_string('add_delivery.html', {'form': OrderForm()})
+        #self.assertEqual(response.content.decode(), expected_html)
+
 
 
 class OrderDetailTest(TestCase):
@@ -56,7 +149,7 @@ class OrderDetailTest(TestCase):
         order = createTestOrder()
         c = Client()
         response = c.get('/orders/'+str(order.id)+'/')
-        self.assertIn('4711', response.content.decode())
+        self.assertIn('4811', response.content.decode())
         self.assertIn('Lego', response.content.decode())
 
     def test_order_detail_page_shows_order_line(self):
@@ -91,7 +184,7 @@ class OrderDetailTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
 
-class AddOrderPageTest(TestCase):
+class OrderAddPageTest(TestCase):
 
     def test_add_order_url_resolves_to_add_order_view(self):
         found = resolve('/orders/add/')

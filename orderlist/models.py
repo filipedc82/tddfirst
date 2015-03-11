@@ -18,3 +18,17 @@ class OrderLine(models.Model):
     qty = models.FloatField()
     unit_price = models.FloatField()
     dlry_date = models.DateField()
+
+
+class Delivery(models.Model):
+    dlry_no = models.TextField(max_length=50)
+    recipient = models.TextField(max_length=50)
+    sender = models.TextField(max_length=50)
+    dispatch_date = models.DateField()
+
+
+class DeliveryLine(models.Model):
+    delivery = models.ForeignKey(Delivery)
+    order_line = models.ForeignKey(OrderLine)
+    product = models.TextField(max_length=50)
+    qty = models.FloatField()

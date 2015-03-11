@@ -12,6 +12,10 @@ urlpatterns = patterns('',
     url(r'^orders/(?P<pk>\d+)/$', views.OrderDetailView.as_view(), name='order_detail'),
     url(r'^orders/add/$', 'orderlist.views.add_order', name='add_order'),
 
+    url(r'^deliveries/$', views.DeliveryListView.as_view(), name='delivery_list'),
+    url(r'^deliveries/(?P<pk>\d+)/$', views.DeliveryDetailView.as_view(), name='delivery_detail'),
+    url(r'^deliveries/add/$', 'orderlist.views.add_delivery', name='add_delivery'),
+
 )
 
 

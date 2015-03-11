@@ -46,11 +46,53 @@ class NewVisitorTest(StaticLiveServerTestCase):
 
 
 
-    def test_addOrder(self):
+    def test_can_add_new_delivery(self):
+        #prepare Orders
         o1 = createTestOrder()
-        print(o1.order_no)
         o2 = createTestOrder()
-        print(o2.order_no)
+
+        # Klaus opens the browser and goes to the delivery page
+        self.browser.get(self.live_server_url+ "/deliveries/")
+        self.browser.set_window_size(1024, 768)
+
+
+        # He notices the page title Delivery List and the styled page, and an empty table
+        self.assertIn('Delivery List', self.browser.title)
+        header_text = self.browser.find_element_by_tag_name('h1').text
+        self.assertIn('Delivery', header_text)
+        self.assertGreater(self.browser.find_element_by_tag_name('h1').location['x'], 10)
+
+        # He clicks the link to create a new Delivery
+        create_link = self.browser.find_element_by_id('create_delivery_link')
+        self.assertEqual(create_link.text,'Create new delivery')
+        self.browser.get(create_link.get_attribute('href'))
+
+        # A window titled "select order lines for delivery" is displayed displaying the four open order lines (orderno, product, open_qty, dlry_date)
+        self.assertIn('Select order lines for delivery', self.browser.title)
+
+        self.fail("Finish the test")
+
+
+        # He selects order lines 1-3 and clicks the "Add to delivery button"
+
+        # A new page opens showing a new delivery and 3 lines with the qty allowing edit
+
+        # He changes a qty and clicks the Button "Save delivery"
+
+        # He is redirected to a page showing the delivery.
+
+        # He clicks the "Return to Delivery List" Button and sees the Delivery List with the Delivery entry.
+
+
+
+
+
+
+
+
+
+
+
         self.fail()
 
     def test_can_add_a_new_order(self):
@@ -147,6 +189,4 @@ class NewVisitorTest(StaticLiveServerTestCase):
         self.assertTrue(
             any(cell.text == 'BE/4711/215' for cell in cells)
         )
-
-        self.fail('Finish the test!')
 

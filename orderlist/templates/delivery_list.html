@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block  title_text%} Delivery List{% endblock %}
+{% block  header_text%} Delivery List {% endblock %}
+
+{% block  page_content%}
+        <a id="create_delivery_link" href="/deliveries/add">Create new delivery</a>
+        <br/>
+        <table id="id_delivery_table" class="table">
+            <tr>
+                <th>Recipient</th>
+                <th>Delivery Number</th>
+                <th>Sender</th>
+                <th>Dispatch date</th>
+            </tr>
+             {% for dlry in object_list %}
+                 <tr>
+                    <td> {{ dlry.recipient }}</td>
+                    <td> <a href="/deliveries/{{ dlry.id }}/">{{ dlry.dlry_no }}</a></td>
+                    <td> {{ dlry.sender }}</td>
+                    <td> {{ dlry.dispatch_date }}</td>
+                </tr>
+             {% endfor %}
+
+
+        </table>
+
+ {% endblock %}

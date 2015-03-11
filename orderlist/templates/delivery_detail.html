@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block  title_text%} Delivery {{delivery.dlry_no}}{% endblock %}
+{% block  header_text%} Delivery details {% endblock %}
+
+{% block  page_content%}
+    <a id="delivery_list_link" href="/deliveries/">Back to Delivery List</a><br/>
+
+
+    Customer: {{ delivery.recipient }}<br/>
+    Delivery No: {{ delivery.dlry_no }}<br/>
+    Sender: {{ delivery.sender }}<br/>
+    Dispatch Date: {{ delivery.dispatch_date }}<br/>
+
+
+        <table class="table" id="id_delivery_line_table">
+            <tr>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Order No</th>
+            </tr>
+            {% for deliveryline in delivery.deliveryline_set.all %}
+                 <tr>
+                    <td> {{ deliveryline.product }}</td>
+                    <td> {{ deliveryline.qty }}</td>
+                    <td> {{ deliveryline.order_line.order.order_no }}</td>
+                    <td></td>
+                </tr>
+            {% endfor %}
+        </table>
+    </form>
+
+{% endblock %}
