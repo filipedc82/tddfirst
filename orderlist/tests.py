@@ -125,8 +125,18 @@ class DeliveryAddPageTest(TestCase):
         ol_select_form = OrderLineSelectForm({'orderLine': ol})
         response = c.get('/deliveries/add/')
         self.assertTemplateUsed(response, 'add_delivery.html')  # correct template
-        expected_html = render_to_string('add_delivery.html', {'form': OrderForm()})
+        # expected_html = render_to_string('add_delivery.html'})
         #self.assertEqual(response.content.decode(), expected_html)
+
+    def test_add_delivery_page_renders_correct_order_line_select_forms(self):
+        order = createTestOrder()
+        ol = createTestOrderLine(order)
+        c = Client()
+        response = c.get('/deliveries/add/')
+        olsformcandidate= response.context['order_line_select_forms'][0]
+        self.assertIs(type(olsformcandidate), OrderLineSelectForm) 	#Sanity-check that your form is rendered
+        self.assertIn(order.order_no, response.content.decode())
+        self.assertIn(ol.product, response.content.decode())
 
 
 
@@ -260,6 +270,17 @@ class OrderLineFormTest(TestCase):
     def test_line_form_validation_for_blank_items(self):
         form = OrderLineForm(data={'product': ''})
         self.assertFalse(form.is_valid())
+
+
+#class OrderLineSelectFormTest(TestCase):
+#todo: How to test this form?
+    # def test_line_form_validation_for_blank_items(self):
+    #     form = OrderLineForm(data={'product': ''})
+    #     self.assertFalse(form.is_valid())
+
+
+
+
 
 class ModelTest(TestCase):
 

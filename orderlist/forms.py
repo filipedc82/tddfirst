@@ -1,4 +1,4 @@
-from django.forms import Form, ModelForm, CharField, TextInput, Select, HiddenInput, DateInput, NumberInput
+from django.forms import *
 from orderlist.models import *
 
 class OrderForm(ModelForm):
@@ -24,5 +24,22 @@ class OrderLineForm(ModelForm):
         }
 
 class OrderLineSelectForm(Form):
-    pass
+    product = CharField(max_length=50, widget=TextInput(attrs={'readonly':'readonly', 'class':"form-control-static"}))
+    order_no = CharField(max_length=50, widget=TextInput(attrs={'readonly':'readonly', 'class':"form-control-static"}))
+    order_qty = FloatField(widget=NumberInput(attrs={'readonly':'readonly', 'class':"form-control-static"}))
+    order_line_id = IntegerField(required=False, widget=HiddenInput())
+    selected = BooleanField(required=False)
+
+
+
+#
+#
+#
+#     data = {'subject': 'hello',
+# ...         'message': 'Hi there',
+# ...         'sender': 'foo@example.com',
+# ...         'cc_myself': True}
+# >>> f = ContactForm(data)
+
+
 #Todo: Write form to select orderlines for Delivery

@@ -48,10 +48,20 @@ class OrderDetailView(generic.DetailView):
 # def order_detail(request, order_id):
 #     order = get_object_or_404(Order, pk=order_id)
 #     context_dict = {'order': order}
-#     return render(request, 'order_detail.html', context_dict)
+#     return render(request, 'order_detail.html's, context_dict)
 
 def add_delivery(request):
-    return render(request, 'add_delivery.html')
+    olsforms = []
+    for x in range(1, OrderLine.objects.count()+1):
+         print("ol: "+str(x))
+         ol = OrderLine.objects.get(pk=x)
+         data = {'order_line_id': 1, 'order_qty': ol.qty,'order_no':ol.order.order_no, 'product': ol.product}
+         print(data)
+         olsforms.append(OrderLineSelectForm(data))
+         print("olsforms"+ str(olsforms))
+         print(olsforms[x-1])
+
+    return render(request, 'add_delivery.html', {'order_line_select_forms': olsforms })
 
 
 def add_order(request):
