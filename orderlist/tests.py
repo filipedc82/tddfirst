@@ -19,8 +19,8 @@ def createTestOrderLine(my_order):
     ol.order = my_order
     ol.dlry_date = '2015-05-05'
     ol.product = 'anotherGuide'
-    ol.unit_price = 10.0
-    ol.qty = 200
+    ol.unit_price = 10.0 + OrderLine.objects.count()
+    ol.qty = 200 + OrderLine.objects.count()
     ol.save()
     return ol
 
@@ -138,7 +138,14 @@ class DeliveryAddPageTest(TestCase):
         self.assertIn(order.order_no, response.content.decode())
         self.assertIn(ol.product, response.content.decode())
 
-
+    def test_add_delivery_view_creates_correct_get_url(self):
+        order = createTestOrder()
+        ol = createTestOrderLine(order)
+        ol2 = createTestOrderLine(order)
+        ol3 = createTestOrderLine(order)
+        c = Client()
+        c.post('/deliveries/add/')
+        #todo: finish
 
 class OrderDetailTest(TestCase):
 
@@ -192,7 +199,6 @@ class OrderDetailTest(TestCase):
         response = c.post('/orders/'+str(order.id)+'/', {'order': order.id, 'product':'', 'qty':'', 'unit_price': '', 'dlry_date':''})
         self.assertEqual(OrderLine.objects.count(),0)
         self.assertEqual(response.status_code, 200)
-
 
 class OrderAddPageTest(TestCase):
 

@@ -28,18 +28,6 @@ class OrderLineSelectForm(Form):
     order_no = CharField(max_length=50, widget=TextInput(attrs={'readonly':'readonly', 'class':"form-control-static"}))
     order_qty = FloatField(widget=NumberInput(attrs={'readonly':'readonly', 'class':"form-control-static"}))
     order_line_id = IntegerField(required=False, widget=HiddenInput())
-    selected = BooleanField(required=False)
+    customer = CharField(max_length=50, widget=TextInput(attrs={'readonly':'readonly', 'class':"form-control-static"}))
+    selected = BooleanField(required=True)
 
-
-
-#
-#
-#
-#     data = {'subject': 'hello',
-# ...         'message': 'Hi there',
-# ...         'sender': 'foo@example.com',
-# ...         'cc_myself': True}
-# >>> f = ContactForm(data)
-
-
-#Todo: Write form to select orderlines for Delivery
