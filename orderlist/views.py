@@ -3,6 +3,7 @@ from django.http import HttpResponse, HttpRequest
 from django.views import generic
 from orderlist.models import *
 from orderlist.forms import *
+from django.forms.formsets import formset_factory
 
 class OrderListView(generic.ListView):
     model = Order
@@ -54,24 +55,35 @@ def add_delivery(request):
     if request.method == "POST":
         print("POST DATA:")
         print(request.POST)
+        #todo: deal with post data
+        return redirect('/deliveries/') #todo
 
-    olsforms = []
-    for x in range(1, OrderLine.objects.count()+1):
-         print("ol: "+str(x))
-         ol = OrderLine.objects.get(pk=x)
-         data = {'order_line_id': ol.id,
-                 'order_qty': ol.qty,
-                 'order_no':ol.order.order_no,
-                 'product': ol.product,
-                 'customer': ol.order.customer,
-                 'selected': ol.id}
-         print(data)
-         newOlsform = OrderLineSelectForm(data) # todo: how to get different name space for each form? Try formsets
-  #       newOlsform.selected.__setattr__({'id':"testing"})
-         olsforms.append(newOlsform) #, prefix=str(x))
-         print(olsforms[x-1])
 
-    return render(request, 'add_delivery.html', {'order_line_select_forms': olsforms })
+    else:
+        data = []
+        for x in range(1, OrderLine.objects.count()+1):
+             print("ol: "+str(x))
+             ol = OrderLine.objects.get(pk=x)
+             data.append({'order_line_id': ol.id,
+                     'order_qty': ol.qty,
+                     'order_no':ol.order.order_no,
+                     'product': ol.product,
+                     'customer': ol.order.customer,
+                     })
+             print('DATA array')
+             print(data.__len__())
+
+
+             #newOlsform = OrderLineSelectForm(data) # todo: how to get different name space for each form? Try formsets
+      #       newOlsform.selected.__setattr__({'id':"testing"})
+             #olsforms.append(newOlsform) #, prefix=str(x))
+             #print(olsforms[x-1])
+
+        fs = formset_factory(OrderLineSelectForm, extra=0)
+        olsforms = fs(initial = data)
+
+
+        return render(request, 'add_delivery.html', {'order_line_select_forms': olsforms })
 
 
 def add_order(request):
