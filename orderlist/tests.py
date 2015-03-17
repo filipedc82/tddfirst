@@ -112,23 +112,29 @@ class DeliveryDetailTest(TestCase):
 class DeliveryAddPageTest(TestCase):
 
     def test_add_delivery_url_resolves_to_add_delivery_view(self):
-        found = resolve('/deliveries/add/')
+        found = resolve('/deliveries/add/1,2,')
         self.assertEqual(found.func, add_delivery)
 
-    def test_add_delivery_page_returns_correct_html(self):
-        request = HttpRequest()
-        request.method = 'GET'
-        #response = add_delivery(request)
+
+
+
+class DeliverySelectOLPageTest(TestCase):
+
+    def test_select_ol_url_resolves_to_select_ol_view(self):
+        found = resolve('/deliveries/add/')
+        self.assertEqual(found.func, select_ol)
+
+    def test_select_ol_page_returns_correct_html(self):
         c = Client()
         o = createTestOrder()
         ol = createTestOrderLine(o)
         ol_select_form = OrderLineSelectForm({'orderLine': ol})
         response = c.get('/deliveries/add/')
-        self.assertTemplateUsed(response, 'add_delivery.html')  # correct template
-        # expected_html = render_to_string('add_delivery.html'})
+        self.assertTemplateUsed(response, 'select_ol.html')  # correct template
+        # expected_html = render_to_string('select_ol.html'})
         #self.assertEqual(response.content.decode(), expected_html)
 
-    def test_add_delivery_page_renders_correct_order_line_select_forms(self):
+    def test_select_ol_page_renders_correct_order_line_select_forms(self):
         order = createTestOrder()
         ol = createTestOrderLine(order)
         c = Client()
@@ -138,13 +144,34 @@ class DeliveryAddPageTest(TestCase):
         self.assertIn(order.order_no, response.content.decode())
         self.assertIn(ol.product, response.content.decode())
 
-    def test_add_delivery_view_creates_correct_get_url(self):
+
+
+    def test_select_ol_view_creates_correct_get_url(self):
         order = createTestOrder()
         ol = createTestOrderLine(order)
         ol2 = createTestOrderLine(order)
         ol3 = createTestOrderLine(order)
         c = Client()
-        c.post('/deliveries/add/')
+        response = c.post('/deliveries/add/', {
+                     'form-0-order_line_id': ol.id,
+                     'form-0-order_qty': ol.qty,
+                     'form-0-order_no':ol.order.order_no,
+                     'form-0-product': ol.product,
+                     'form-0-customer': ol.order.customer,
+                     'form-0-selected': True,
+                     'form-1-order_line_id': ol2.id,
+                     'form-1-order_qty': ol2.qty,
+                     'form-1-order_no':ol2.order.order_no,
+                     'form-1-product': ol2.product,
+                     'form-1-customer': ol2.order.customer,
+                     'form-1-selected': True,
+                     'form-2-order_line_id': ol3.id,
+                     'form-2-order_qty': ol3.qty,
+                     'form-2-order_no':ol3.order.order_no,
+                     'form-2-product': ol3.product,
+                     'form-2-customer': ol3.order.customer,
+                     })
+        self.assertRedirects(response, '/deliveries/add/'+str(ol.id)+','+str(ol2.id)+',')
         #todo: finish
 
 class OrderDetailTest(TestCase):

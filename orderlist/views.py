@@ -52,6 +52,10 @@ class OrderDetailView(generic.DetailView):
 #     return render(request, 'order_detail.html's, context_dict)
 
 def add_delivery(request):
+    pass
+
+
+def select_ol(request):
     if request.method == "POST":
         print("POST DATA:")
         print(request.POST)
@@ -83,7 +87,7 @@ def add_delivery(request):
         olsforms = fs(initial = data)
 
 
-        return render(request, 'add_delivery.html', {'order_line_select_forms': olsforms })
+        return render(request, 'select_ol.html', {'order_line_select_forms': olsforms })
 
 
 def add_order(request):
