@@ -51,38 +51,33 @@ class OrderDetailView(generic.DetailView):
 #     context_dict = {'order': order}
 #     return render(request, 'order_detail.html's, context_dict)
 
-def add_delivery(request):
-    pass
+def add_delivery(request, olsid):
+    print('DEBUG add_delivery view')
+    print(olsid.split(","))
+    return render(request, 'add_delivery.html')
 
 
 def select_ol(request):
     if request.method == "POST":
-        print("POST DATA:")
-        print(request.POST)
-        #todo: deal with post data
-        return redirect('/deliveries/') #todo
+        ol_string = ""
+        for key in request.POST.keys():
+            if ("selected" in key) and str(request.POST.get(key))== 'on' :
+                olsformno = key[key.index("-")+1:key.index("selected")-1]
+                olfield = "form-"+str(olsformno)+"-order_line_id"
+                ol_string = ol_string + str(request.POST.get(olfield)) + ","
+        return redirect('/deliveries/add/'+ol_string)
 
 
     else:
         data = []
         for x in range(1, OrderLine.objects.count()+1):
-             print("ol: "+str(x))
-             ol = OrderLine.objects.get(pk=x)
-             data.append({'order_line_id': ol.id,
-                     'order_qty': ol.qty,
-                     'order_no':ol.order.order_no,
-                     'product': ol.product,
-                     'customer': ol.order.customer,
-                     })
-             print('DATA array')
-             print(data.__len__())
-
-
-             #newOlsform = OrderLineSelectForm(data) # todo: how to get different name space for each form? Try formsets
-      #       newOlsform.selected.__setattr__({'id':"testing"})
-             #olsforms.append(newOlsform) #, prefix=str(x))
-             #print(olsforms[x-1])
-
+            ol = OrderLine.objects.get(pk=x)
+            data.append({'order_line_id': ol.id,
+                         'order_qty': ol.qty,
+                         'order_no':ol.order.order_no,
+                         'product': ol.product,
+                         'customer': ol.order.customer,
+                         })
         fs = formset_factory(OrderLineSelectForm, extra=0)
         olsforms = fs(initial = data)
 

@@ -14,7 +14,7 @@ urlpatterns = patterns('',
 
     url(r'^deliveries/$', views.DeliveryListView.as_view(), name='delivery_list'),
     url(r'^deliveries/(?P<pk>\d+)/$', views.DeliveryDetailView.as_view(), name='delivery_detail'),
-    url(r'^deliveries/add/(?P<match>.+)$', 'orderlist.views.add_delivery', name='add_delivery'),
+    url(r'^deliveries/add/(?P<olsid>.+)$', 'orderlist.views.add_delivery', name='add_delivery'),
     url(r'^deliveries/add/$', 'orderlist.views.select_ol', name='select_ol'),
 
 )

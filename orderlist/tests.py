@@ -158,20 +158,21 @@ class DeliverySelectOLPageTest(TestCase):
                      'form-0-order_no':ol.order.order_no,
                      'form-0-product': ol.product,
                      'form-0-customer': ol.order.customer,
-                     'form-0-selected': True,
+                     'form-0-selected': 'on',
                      'form-1-order_line_id': ol2.id,
                      'form-1-order_qty': ol2.qty,
                      'form-1-order_no':ol2.order.order_no,
                      'form-1-product': ol2.product,
                      'form-1-customer': ol2.order.customer,
-                     'form-1-selected': True,
+                     'form-1-selected': 'on',
                      'form-2-order_line_id': ol3.id,
                      'form-2-order_qty': ol3.qty,
                      'form-2-order_no':ol3.order.order_no,
                      'form-2-product': ol3.product,
                      'form-2-customer': ol3.order.customer,
+                     'form-2-selected': 'off',
                      })
-        self.assertRedirects(response, '/deliveries/add/'+str(ol.id)+','+str(ol2.id)+',')
+        self.assertRedirects(response, '/deliveries/add/'+str(ol2.id)+','+str(ol.id)+',')
         #todo: finish
 
 class OrderDetailTest(TestCase):
