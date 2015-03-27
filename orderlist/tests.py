@@ -307,11 +307,29 @@ class OrderLineFormTest(TestCase):
         self.assertFalse(form.is_valid())
 
 
-#class OrderLineSelectFormTest(TestCase):
-#todo: How to test this form?
-    # def test_line_form_validation_for_blank_items(self):
-    #     form = OrderLineForm(data={'product': ''})
-    #     self.assertFalse(form.is_valid())
+class OrderLineSelectFormTest(TestCase):
+
+    def test_line_form_validation_for_blank_items(self):
+        form = OrderLineForm(data={'product': ''})
+        self.assertFalse(form.is_valid())
+
+    def test_ol_select_form_elements_ro_except_select(self):
+        o = createTestOrder()
+        ol = createTestOrderLine(o)
+        oldata = {  'order_line_id': ol.id,
+                    'order_qty': ol.qty,
+                    'order_no':ol.order.order_no,
+                    'product': ol.product,
+                    'customer': ol.order.customer,
+                    }
+        olsform = OrderLineSelectForm(oldata)
+        self.assertTrue(olsform.fields['product'].widget.attrs.get("class")=="form-control-static")
+        self.assertTrue(olsform.fields['order_no'].widget.attrs.get("class")=="form-control-static")
+        self.assertTrue(olsform.fields['order_qty'].widget.attrs.get("class")=="form-control-static")
+        self.assertTrue(olsform.fields['customer'].widget.attrs.get("class")=="form-control-static")
+        self.assertIsInstance(olsform.fields['order_line_id'].widget, widgets.HiddenInput)
+        self.assertIsInstance(olsform.fields['selected'], BooleanField)
+
 
 
 
@@ -348,3 +366,37 @@ class ModelTest(TestCase):
         self.assertEqual(second_saved_order.orderline_set.count(), 1)
         self.assertEqual(second_saved_order.orderline_set.last().product, 'aGuide')
 
+    def test_can_save_and_retrieve_Delivery_and_DeliveryLine(self):
+        first_delivery = Delivery()
+        first_delivery.dlry_no = "FirstDeliveryNo"
+        first_delivery.recipient = "FirstCustomer"
+        first_delivery.dispatch_date='2015-05-05'
+        first_delivery.save()
+
+        second_delivery = Delivery()
+        second_delivery.dlry_no = "2ndDeliveryNo"
+        second_delivery.recipient = "2ndCustomer"
+        second_delivery.dispatch_date='2015-05-10'
+        second_delivery.save()
+
+        o = createTestOrder()
+        ol = createTestOrderLine(o)
+
+        dL = DeliveryLine()
+        dL.delivery_id=second_delivery.id
+        dL.order_line_id = ol.id
+        dL.product = 'aGuide'
+        dL.qty = 25.5
+        dL.save()
+
+        saved_deliveries = Delivery.objects.all()
+        self.assertEqual(saved_deliveries.count(), 2)
+        self.assertEqual(DeliveryLine.objects.all().count(),1)
+
+        first_saved_delivery = saved_deliveries[0]
+        second_saved_delivery = saved_deliveries[1]
+        self.assertEqual(first_saved_delivery.dlry_no, 'FirstDeliveryNo')
+        self.assertEqual(second_saved_delivery.dlry_no, '2ndDeliveryNo')
+        self.assertEqual(second_saved_delivery.deliveryline_set.count(), 1)
+        self.assertEqual(second_saved_delivery.deliveryline_set.last().product, 'aGuide')
+        self.assertEqual(second_saved_delivery.deliveryline_set.last().order_line_id, ol.id)
