@@ -81,7 +81,6 @@ def select_ol(request):
         fs = formset_factory(OrderLineSelectForm, extra=0)
         olsforms = fs(initial = data)
 
-
         return render(request, 'select_ol.html', {'order_line_select_forms': olsforms })
 
 
@@ -98,20 +97,6 @@ def add_order(request):
     else:
         form = OrderForm()
     return render(request, 'add_order.html', {'form':form})
-
-
-
-
-
-        # new_order = Order()
-        # new_order.order_no = request.POST['order_no']
-        # new_order.customer = request.POST['customer']
-        # new_order.save()
-        # return redirect('/orders/'+str(new_order.id)+'/')
-
-
-
-
 
 
 

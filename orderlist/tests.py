@@ -31,7 +31,6 @@ def createTestDelivery():
     dlry.sender = "DCA"
     dlry.dispatch_date = "2015-04-05"
     dlry.save()
-    print(str(dlry.dlry_no))
     return dlry
 
 def createTestDeliveryLine(my_dlry):
@@ -172,8 +171,10 @@ class DeliverySelectOLPageTest(TestCase):
                      'form-2-customer': ol3.order.customer,
                      'form-2-selected': 'off',
                      })
-        self.assertRedirects(response, '/deliveries/add/'+str(ol2.id)+','+str(ol.id)+',')
-        #todo: finish
+        self.assertIn(str(ol.id),str(response.url))
+        self.assertIn(str(ol2.id),str(response.url))
+        self.assertIn("/deliveries/add/",str(response.url))
+
 
 class OrderDetailTest(TestCase):
 

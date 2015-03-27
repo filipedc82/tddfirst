@@ -1,17 +1,15 @@
 {% extends 'base.html' %}
 
-{% block  title_text%} Add Delivery{% endblock %}
-{% block  header_text%} Add Delivery{% endblock %}
+{% block  title_text%} Select Order Lines{% endblock %}
+{% block  header_text%} Select Order Lines for new delivery{% endblock %}
 
 {% block  page_content%}
-    <h1> Select Order Lines for new delivery</h1>
 
-    <form action="/deliveries/add/" method="POST">
+    <form action="/deliveries/add/" method="POST" id="id_order_line_form">
         {% csrf_token %}
-
         {% for oslform in order_line_select_forms %}
-        {{ oslform }}
-        </br>
+            {{ oslform }}
+            </br>
         {% endfor %}
         <input type="submit" class="btn btn-default" id="id_submit_select_order_lines_button" value="Confirm Selection" />
     </form>

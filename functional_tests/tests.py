@@ -66,18 +66,28 @@ class NewVisitorTest(StaticLiveServerTestCase):
         create_link = self.browser.find_element_by_id('create_delivery_link')
         self.assertEqual(create_link.text,'Create new delivery')
         self.browser.get(create_link.get_attribute('href'))
-
         # A window titled "select order lines for delivery" is displayed displaying the four open order lines (orderno, product, open_qty, dlry_date)
-        self.assertIn('Select order lines for delivery', self.browser.title)
+        self.assertIn('Select Order Lines for new delivery', self.browser.find_element_by_tag_name('h1').text)
 
-        self.fail("Finish the test")
+        body = self.browser.find_element_by_tag_name('body')
+        self.assertTrue(body.text.count("Selected:")==4)
 
+        # He can't edit some other fields but selects order lines 1-3 and clicks the "Confirm Selection" #ckech
+        self.assertTrue(self.browser.find_element_by_id('id_form-0-product').get_attribute("class")=="form-control-static")
+        self.browser.find_element_by_id('id_form-0-selected').click()
+        self.browser.find_element_by_id('id_form-1-selected').click()
+        self.browser.find_element_by_id('id_form-3-selected').click()
+        self.browser.find_element_by_id('id_submit_select_order_lines_button').click()
 
-        # He selects order lines 1-3 and clicks the "Add to delivery button"
 
         # A new page opens showing a new delivery and 3 lines with the qty allowing edit
+        self.assertIn('Add Delivery', self.browser.title)
+
+
+
 
         # He changes a qty and clicks the Button "Save delivery"
+        self.fail("Finish the test")
 
         # He is redirected to a page showing the delivery.
 
