@@ -19,6 +19,8 @@ class OrderLine(models.Model):
     unit_price = models.FloatField()
     dlry_date = models.DateField()
 
+    def __str__(self):
+        return str(self.id)
 
 class Delivery(models.Model):
     dlry_no = models.TextField(max_length=50)
@@ -26,9 +28,17 @@ class Delivery(models.Model):
     sender = models.TextField(max_length=50)
     dispatch_date = models.DateField()
 
+    def __str__(self):
+        return self.dlry_no
+
+    def get_absolute_url(self):
+        return reverse('delivery_detail', kwargs={'pk': self.pk})
 
 class DeliveryLine(models.Model):
     delivery = models.ForeignKey(Delivery)
     order_line = models.ForeignKey(OrderLine)
     product = models.TextField(max_length=50)
     qty = models.FloatField()
+
+    def __str__(self):
+        return str(self.id)

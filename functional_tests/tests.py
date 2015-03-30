@@ -65,7 +65,8 @@ class NewVisitorTest(StaticLiveServerTestCase):
         # He clicks the link to create a new Delivery
         create_link = self.browser.find_element_by_id('create_delivery_link')
         self.assertEqual(create_link.text,'Create new delivery')
-        self.browser.get(create_link.get_attribute('href'))
+        print(str(create_link.get_attribute('href')))
+        self.browser.get(str(create_link.get_attribute('href')))
         # A window titled "select order lines for delivery" is displayed displaying the four open order lines (orderno, product, open_qty, dlry_date)
         self.assertIn('Select Order Lines for new delivery', self.browser.find_element_by_tag_name('h1').text)
 
@@ -80,8 +81,20 @@ class NewVisitorTest(StaticLiveServerTestCase):
         self.browser.find_element_by_id('id_submit_select_order_lines_button').click()
 
 
-        # A new page opens showing a new delivery and 3 lines with the qty allowing edit
+        # A new page opens allowing to add a new delivery and 3 lines with the qty allowing edit
         self.assertIn('Add Delivery', self.browser.title)
+
+        # A text field is showing prompting to enter the Delivery no, dispatch date, sender and recipient name
+        dlry_no_field = self.browser.find_element_by_id('id_dlry_no')
+        self.assertEqual(dlry_no_field.get_attribute('placeholder'), 'Delivery Number')
+        recipient_field = self.browser.find_element_by_id('id_recipient')
+        self.assertEqual(recipient_field.get_attribute('placeholder'), 'Recipient')
+        sender_field = self.browser.find_element_by_id('id_sender')
+        self.assertEqual(sender_field.get_attribute('placeholder'), 'Sender')
+        date_field = self.browser.find_element_by_id('id_dispatch_date')
+        self.assertEqual(date_field.get_attribute('placeholder'), 'Dispatch Date')
+
+
 
 
 

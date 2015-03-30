@@ -6,7 +6,7 @@ from orderlist.models import *
 from orderlist.views import *
 from orderlist.forms import *
 
-
+## HELPERS
 def createTestOrder():
     order = Order()
     order.order_no = str(Order.objects.count()+4811)
@@ -18,7 +18,7 @@ def createTestOrderLine(my_order):
     ol = OrderLine()
     ol.order = my_order
     ol.dlry_date = '2015-05-05'
-    ol.product = 'anotherGuide'
+    ol.product = 'anotherGuide'+str(OrderLine.objects.count())
     ol.unit_price = 10.0 + OrderLine.objects.count()
     ol.qty = 200 + OrderLine.objects.count()
     ol.save()
@@ -43,6 +43,9 @@ def createTestDeliveryLine(my_dlry):
     dl.save()
     return dl
 
+
+
+## PAGE and VIEW TESTS
 class HomePageTest(TestCase):
 
     def test_root_url_resolves_to_home_page_view(self):
@@ -114,6 +117,33 @@ class DeliveryAddPageTest(TestCase):
         found = resolve('/deliveries/add/1,2,')
         self.assertEqual(found.func, add_delivery)
 
+    def test_add_delivery_url_returns_correct_html(self):
+        d = createTestDelivery()
+        dl = createTestDeliveryLine(d)
+        o = createTestOrder()
+        ol1 = createTestOrderLine(o)
+        ol2 = createTestOrderLine(o)
+        response = Client().get('/deliveries/add/1,2,')
+        self.assertTemplateUsed(response, 'add_delivery.html')  # correct template
+
+    def test_add_delivery_page_renders_correct_forms(self):
+        o = createTestOrder()
+        ol1 = createTestOrderLine(o)
+        ol2 = createTestOrderLine(o)
+        c = Client()
+        response = c.get('/deliveries/add/2,1,')
+        self.assertIsInstance(response.context['dform'], DeliveryForm) 	#Sanity-check that your form is rendered, and its errors are displayed.
+        dlformcandidate= response.context['dlforms'][0]
+        self.assertIs(type(dlformcandidate), DeliveryLineForm) 	#Sanity-check that your form is rendered
+
+
+
+    def test_add_delivery_page_can_handle_POST_correct(self):
+        self.fail("Finish the test")
+
+    def test_add_delivery_page_can_handle_POST_incorrect(self):
+        self.fail("Finish the test")
+
 
 
 
@@ -142,6 +172,7 @@ class DeliverySelectOLPageTest(TestCase):
         self.assertIs(type(olsformcandidate), OrderLineSelectForm) 	#Sanity-check that your form is rendered
         self.assertIn(order.order_no, response.content.decode())
         self.assertIn(ol.product, response.content.decode())
+
 
 
 
@@ -174,7 +205,6 @@ class DeliverySelectOLPageTest(TestCase):
         self.assertIn(str(ol.id),str(response.url))
         self.assertIn(str(ol2.id),str(response.url))
         self.assertIn("/deliveries/add/",str(response.url))
-
 
 class OrderDetailTest(TestCase):
 
@@ -265,7 +295,6 @@ class OrderAddPageTest(TestCase):
         self.assertEqual(Order.objects.count(),0)
         self.assertEqual(response.status_code, 200)
 
-
 class OrderListPageTest(TestCase):
 
     def test_orders_url_resolves_to_order_list_view(self):
@@ -294,6 +323,9 @@ class OrderListPageTest(TestCase):
         self.assertIn('FirstOrderNo', response.content.decode())
         self.assertIn('2ndCustomer', response.content.decode())
 
+
+
+## TESTS FOR FORMS
 class OrderFormTest(TestCase):
 
     def test_form_validation_for_blank_items(self):
@@ -305,7 +337,6 @@ class OrderLineFormTest(TestCase):
     def test_line_form_validation_for_blank_items(self):
         form = OrderLineForm(data={'product': ''})
         self.assertFalse(form.is_valid())
-
 
 class OrderLineSelectFormTest(TestCase):
 
@@ -330,11 +361,20 @@ class OrderLineSelectFormTest(TestCase):
         self.assertIsInstance(olsform.fields['order_line_id'].widget, widgets.HiddenInput)
         self.assertIsInstance(olsform.fields['selected'], BooleanField)
 
+class DeliveryFormTest(TestCase):
+
+    def test_form_validation_for_blank_items(self):
+        form = DeliveryForm(data={})
+        self.assertFalse(form.is_valid())
+
+class DeliveryLineFormTest(TestCase):
+    def test_form_validation_for_blank_items(self):
+        form = DeliveryLineForm(data={})
+        self.assertFalse(form.is_valid())
 
 
 
-
-
+##MODELTESTS
 class ModelTest(TestCase):
 
     def test_can_save_and_retrieve_Order_and_OrderLine(self):

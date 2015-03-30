@@ -52,9 +52,45 @@ class OrderDetailView(generic.DetailView):
 #     return render(request, 'order_detail.html's, context_dict)
 
 def add_delivery(request, olsid):
-    print('DEBUG add_delivery view')
-    print(olsid.split(","))
-    return render(request, 'add_delivery.html')
+    dlformset = formset_factory(DeliveryLineForm, extra=20)
+    if request.method == 'POST':
+        dform = DeliveryForm(request.POST)
+        dlforms = dlformset(request.POST)
+        # if form.is_valid():
+        #     new_order = form.save(commit=True)
+        #     return redirect('/orders/'+str(new_order.id)+'/')
+        #
+        # else:
+        #     print(form.errors)
+
+    else:
+        dform = DeliveryForm()
+
+        olineids = olsid.split(",")[:-1]
+        #todo: make robust to cope with forgotten trailing comma
+
+        print(olineids)
+        olines = []
+        print(OrderLine.objects.all())
+        for olineid in olineids:
+            olines.append(OrderLine.objects.get(pk=olineid))
+            print(olines)
+        data = []
+        for oline in olines:
+            data.append({'order_no': oline.order_id,
+                         'qty': oline.qty,
+                         'product':oline.product,
+                        })
+            print(data)
+        dlforms = dlformset(initial=data)
+
+    return render(request, 'add_delivery.html',{'dform': dform,
+                                                'dlforms': dlforms})
+
+
+
+
+
 
 
 def select_ol(request):
