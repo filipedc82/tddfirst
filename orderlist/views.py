@@ -106,14 +106,13 @@ def select_ol(request):
 
     else:
         data = []
-        for x in range(1, OrderLine.objects.count()+1):
-            ol = OrderLine.objects.get(pk=x)
-            data.append({'order_line_id': ol.id,
-                         'order_qty': ol.qty,
-                         'order_no':ol.order.order_no,
-                         'product': ol.product,
-                         'customer': ol.order.customer,
-                         })
+        for ol in OrderLine.objects.all():
+             data.append({'order_line_id': ol.id,
+                          'order_qty': ol.qty,
+                          'order_no':ol.order.order_no,
+                          'product': ol.product,
+                          'customer': ol.order.customer,
+                          })
         fs = formset_factory(OrderLineSelectForm, extra=0)
         olsforms = fs(initial = data)
 

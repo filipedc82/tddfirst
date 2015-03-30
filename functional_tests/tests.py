@@ -31,20 +31,17 @@ def createTestOrder():
     return order
 
 
-
+@override_settings(DEBUG=True)
 class NewVisitorTest(StaticLiveServerTestCase):
 
     def setUp(self):
         self.browser = webdriver.Firefox()
         self.browser.implicitly_wait(3)
-#        setattr(settings, 'DEBUG', true)
+        #setattr(settings, 'DEBUG', true)
 
     def tearDown(self):
-        self.browser.quit()
-
-
-
-
+       # self.browser.quit()
+        pass
 
     def test_can_add_new_delivery(self):
         #prepare Orders
@@ -66,8 +63,10 @@ class NewVisitorTest(StaticLiveServerTestCase):
         create_link = self.browser.find_element_by_id('create_delivery_link')
         self.assertEqual(create_link.text,'Create new delivery')
         print(str(create_link.get_attribute('href')))
-        self.browser.get(str(create_link.get_attribute('href')))
+        response = self.browser.get(self.live_server_url+ "/deliveries/add/")  #str(create_link.get_attribute('href')))
         # A window titled "select order lines for delivery" is displayed displaying the four open order lines (orderno, product, open_qty, dlry_date)
+        self.browser.implicitly_wait(10)
+
         self.assertIn('Select Order Lines for new delivery', self.browser.find_element_by_tag_name('h1').text)
 
         body = self.browser.find_element_by_tag_name('body')
@@ -110,13 +109,6 @@ class NewVisitorTest(StaticLiveServerTestCase):
 
 
 
-
-
-
-
-
-
-        self.fail()
 
     def test_can_add_a_new_order(self):
         # Klaus opens the browser and goes to the orders page
