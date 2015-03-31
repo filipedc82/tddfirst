@@ -13,10 +13,18 @@ class DeliveryListView(generic.ListView):
     model = Delivery
     template_name = 'delivery_list.html'
 
+class InvoiceListView(generic.ListView):
+    model = Invoice
+    template_name = 'invoice_list.html'
 
 class DeliveryDetailView(generic.DetailView):
     model = Delivery
     template_name='delivery_detail.html'
+
+class InvoiceDetailView(generic.DetailView):
+    model = Invoice
+    template_name='invoice_detail.html'
+
 
 class OrderDetailView(generic.DetailView):
     model = Order
@@ -54,16 +62,11 @@ class OrderDetailView(generic.DetailView):
 def add_delivery(request, olsid):
     dlformset = formset_factory(DeliveryLineForm, extra=2)
     if request.method == 'POST':
-        print("debug1")
         dform = DeliveryForm(request.POST)
         dlforms = dlformset(request.POST, request.FILES)
         if (dform.is_valid()):
-            print("Hello dform")
             if (dlforms.is_valid()):
-                print("Hello dlforms")
                 newD= dform.save(commit=True)
-                print(newD.id)
-                print(dlforms.cleaned_data)
                 for dataset in dlforms.cleaned_data:
                     if dataset:
                         newDL = DeliveryLine()
@@ -73,32 +76,12 @@ def add_delivery(request, olsid):
                         if dataset.get("order_line"):
                             newDL.order_line_id = int(dataset.get("order_line").id)
                         newDL.save()
-                        print("Yeah "+str(newDL))
                 return redirect(newD.get_absolute_url())
-
-
-
-
-                # for dlform in dlforms:
-                #     print(dlform)
-                #     if dlform.is_valid():
-                #         print("Going in")
-                #         print(dlform)
-                #         newDL=dlform.save(commit=False)
-                #         newDL.delivery_id = newD.id
-                #         newDL.order_line_id = 1
-                #         newDL.save()
-                # newD.save()
 
             else:
                 print(dlforms.errors)
         else:
             print(dform.errors)
-            #     new_order = form.save(commit=True)
-            #     return redirect('/orders/'+str(new_order.id)+'/')
-            #
-            # else:
-            #     print(form.errors)
 
     else:
         dform = DeliveryForm()

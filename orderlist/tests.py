@@ -43,6 +43,27 @@ def createTestDeliveryLine(my_dlry):
     dl.save()
     return dl
 
+def createTestInvoice():
+    i = Invoice()
+    i.debitor = "MWH"
+    i.invoice_date = "2015-04-04"
+    i.invoice_no = "Invoice"+str(Invoice.objects.count())
+    i.save()
+    return i
+
+
+def createTestInvoiceLine(my_invoice):
+    il = InvoiceLine()
+    il.invoice = my_invoice
+    il.product = 'anotherGuide'
+    il.qty = 150
+    ol = createTestOrderLine(createTestOrder())
+    il.order_line = ol
+    il.unit_price = ol.unit_price - 1
+    dl = createTestDeliveryLine(createTestDelivery())
+    il.delivery_line = dl
+    il.save()
+    return il
 
 
 ## PAGE and VIEW TESTS
@@ -59,6 +80,60 @@ class HomePageTest(TestCase):
         expected_html = render_to_string('home.html')
         self.assertEqual(response.content.decode(), expected_html)
 
+
+class InvoiceListPageTest(TestCase):
+
+    def test_invoices_url_resolves_to_invoices_list_view(self):
+        found = resolve('/invoices/')
+        self.assertEqual(found.view_name, 'invoice_list')
+
+    def test_invoice_list_page_returns_correct_html_GET(self):
+        c = Client()
+        response = c.get('/invoices/')
+        expected_html = render_to_string('invoice_list.html')
+        self.assertEqual(response.content.decode(), expected_html)
+
+    def test_invoice_list_displays_invoices(self):
+        createTestInvoice()
+        createTestInvoice()
+        c = Client()
+        response = c.get('/invoices/')
+        self.assertIn('MWH', response.content.decode())
+        self.assertIn('Invoice0', response.content.decode())
+        self.assertIn('Invoice1', response.content.decode())
+
+class InvoiceDetailTest(TestCase):
+
+    def test_invoice_url_resolves_to_invoice_detail(self):
+        found = resolve('/invoices/20/')
+        self.assertEqual(found.view_name, 'invoice_detail')
+
+    def test_invoice_detail_page_returns_correct_html(self):
+        invoice = createTestInvoice()
+        c = Client()
+        response = c.get('/invoices/'+str(invoice.id)+'/')
+        self.assertTemplateUsed(response, 'invoice_detail.html') #correct template
+        self.assertEqual(response.context['invoice'], invoice) # correct invoice in context
+        expected_html = render_to_string('invoice_detail.html', {'invoice': invoice})
+#        self.assertEqual(response.content.decode(), expected_html) # correct html
+
+    def test_invoice_detail_page_shows_new_invoice(self):
+        invoice = createTestInvoice()
+        c = Client()
+        response = c.get('/invoices/'+str(invoice.id)+'/')
+        self.assertIn(invoice.invoice_no, response.content.decode())
+        self.assertIn(invoice.debitor, response.content.decode())
+        self.assertIn(invoice.get_invoice_value(), response.content.decode())
+
+    def test_invoice_detail_page_shows_invoice_line(self):
+        invoice = createTestInvoice()
+        il = createTestInvoiceLine(invoice)
+        c = Client()
+        response = c.get('/invoices/'+str(invoice.id)+'/')
+        self.assertIn(il.product, response.content.decode())
+        self.assertIn(il.order_line.order.order_no, response.content.decode())
+
+
 class DeliveryListPageTest(TestCase):
 
     def test_deliveries_url_resolves_to_deliveries_list_view(self):
@@ -71,7 +146,7 @@ class DeliveryListPageTest(TestCase):
         expected_html = render_to_string('delivery_list.html')
         self.assertEqual(response.content.decode(), expected_html)
 
-    def test_order_list_displays_orders(self):
+    def test_delivery_list_displays_deliveries(self):
         createTestDelivery()
         createTestDelivery()
         c = Client()
@@ -185,7 +260,6 @@ class DeliveryAddPageTest(TestCase):
         self.assertEqual(DeliveryLine.objects.count(),0)
         self.assertEqual(response.status_code, 200)
 
-
 class DeliverySelectOLPageTest(TestCase):
 
     def test_select_ol_url_resolves_to_select_ol_view(self):
@@ -244,6 +318,7 @@ class DeliverySelectOLPageTest(TestCase):
         self.assertIn(str(ol.id),str(response.url))
         self.assertIn(str(ol2.id),str(response.url))
         self.assertIn("/deliveries/add/",str(response.url))
+
 
 class OrderDetailTest(TestCase):
 
@@ -400,6 +475,7 @@ class OrderLineSelectFormTest(TestCase):
         self.assertIsInstance(olsform.fields['order_line_id'].widget, widgets.HiddenInput)
         self.assertIsInstance(olsform.fields['selected'], BooleanField)
 
+
 class DeliveryFormTest(TestCase):
 
     def test_form_validation_for_blank_items(self):
@@ -447,6 +523,25 @@ class DeliveryLineFormTest(TestCase):
 
 ##MODELTESTS
 class ModelTest(TestCase):
+
+    def test_can_save_and_retrieve_Invoice_and_InvoiceLine(self):
+        i1 = createTestInvoice()
+        i1l1 = createTestInvoiceLine(i1)
+        i1l2 = createTestInvoiceLine(i1)
+        i2 = createTestInvoice()
+        i2l1 = createTestInvoiceLine(i2)
+
+        saved_invoices = Invoice.objects.all()
+        self.assertEqual(saved_invoices.count(), 2)
+        self.assertEqual(InvoiceLine.objects.all().count(),3)
+
+        first_saved_invoice = saved_invoices[0]
+        second_saved_invoice = saved_invoices[1]
+        self.assertEqual(first_saved_invoice.invoice_no, i1.invoice_no)
+        self.assertEqual(second_saved_invoice.invoice_no, i2.invoice_no)
+        self.assertEqual(second_saved_invoice.invoiceline_set.count(), 1)
+        self.assertEqual(second_saved_invoice.invoiceline_set.last().product, i2l1.product)
+
 
     def test_can_save_and_retrieve_Order_and_OrderLine(self):
         first_order = Order()

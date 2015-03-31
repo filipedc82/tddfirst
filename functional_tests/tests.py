@@ -6,29 +6,12 @@ import time
 from selenium.webdriver.common.keys import Keys
 from django.test.utils import override_settings
 from orderlist.models import *
-
-@override_settings(DEBUG=True)\
-
-def createTestOrder():
-    order = Order()
-    order.order_no = str(Order.objects.count()+4711)
-    order.customer = "Lego"
-    order.save()
-    ol1 = OrderLine()
-    ol1.order = order
-    ol1.dlry_date = '2015-05-05'
-    ol1.product = 'anotherGuide'
-    ol1.unit_price = 10.0
-    ol1.qty = 200
-    ol1.save()
-    ol2 = OrderLine()
-    ol2.order = order
-    ol2.dlry_date = '2015-05-10'
-    ol2.product = 'anotherGuide2'
-    ol2.unit_price = 12.0
-    ol2.qty = 300
-    ol2.save()
-    return order
+from orderlist.tests import createTestOrderLine, \
+                            createTestOrder, \
+                            createTestDelivery, \
+                            createTestDeliveryLine, \
+                            createTestInvoice, \
+                            createTestInvoiceLine
 
 
 @override_settings(DEBUG=True)
@@ -43,17 +26,67 @@ class NewVisitorTest(StaticLiveServerTestCase):
         self.browser.quit()
        # pass
 
+
+    def test_can_add_new_invoice(self):
+        #prepare Orders and Invoices
+        o1 = createTestOrder()
+        ol1 = createTestOrderLine(o1)
+        ol2 = createTestOrderLine(o1)
+        o2 = createTestOrder()
+        ol3 = createTestOrderLine(o2)
+        ol4 = createTestOrderLine(o2)
+        i1 = createTestInvoice()
+        il1 = createTestInvoiceLine(i1)
+        il2 = createTestInvoiceLine(i1)
+
+
+        # Klaus opens the browser and goes to the invoice page
+        self.browser.get(self.live_server_url+ "/invoices/")
+        self.browser.set_window_size(1024, 768)
+
+        # He notices the page title Invoice List and the styled page, and sees one invoice
+        self.assertIn('Invoice List', self.browser.title)
+        header_text = self.browser.find_element_by_tag_name('h1').text
+        self.assertIn('Invoice', header_text)
+        self.assertGreater(self.browser.find_element_by_tag_name('h1').location['x'], 10)
+        self.assertIn(i1.invoice_no, self.browser.find_element_by_tag_name('body').text)
+
+        # He clicks on the first invoice and is shown the invoice details
+        self.browser.find_element_by_id("id_invoice_table").find_element_by_tag_name('a').click()
+
+        # He clicks the return link and is returned to the invoice list
+        self.browser.find_element_by_id("invoice_list_link").click()
+        self.assertIn('Invoice List', self.browser.title)
+
+        # He clicks the link to create a new Invoice
+        create_link = self.browser.find_element_by_id('create_invoice_link')
+        self.assertEqual(create_link.text,'Create new invoice')
+        self.browser.get(self.live_server_url+ "/invoices/add/")
+
+        # A window titled "select delivery lines for invoice" is displayed displaying the four delivery lines
+
+
+
+
+
+
+        self.fail("finish the test!")
+
     def test_can_add_new_delivery(self):
         #prepare Orders
         o1 = createTestOrder()
+        ol1 = createTestOrderLine(o1)
+        ol2 = createTestOrderLine(o1)
         o2 = createTestOrder()
+        ol3 = createTestOrderLine(o2)
+        ol4 = createTestOrderLine(o2)
 
         # Klaus opens the browser and goes to the delivery page
         self.browser.get(self.live_server_url+ "/deliveries/")
         self.browser.set_window_size(1024, 768)
 
 
-        # He notices the page title Delivery List and the styled page, and an empty table
+        # He notices the page title Delivery List and the styled page
         self.assertIn('Delivery List', self.browser.title)
         header_text = self.browser.find_element_by_tag_name('h1').text
         self.assertIn('Delivery', header_text)
@@ -62,8 +95,7 @@ class NewVisitorTest(StaticLiveServerTestCase):
         # He clicks the link to create a new Delivery
         create_link = self.browser.find_element_by_id('create_delivery_link')
         self.assertEqual(create_link.text,'Create new delivery')
-        print(str(create_link.get_attribute('href')))
-        self.browser.get(self.live_server_url+ "/deliveries/add/")  #str(create_link.get_attribute('href')))
+        self.browser.get(self.live_server_url+ "/deliveries/add/")
 
         # A window titled "select order lines for delivery" is displayed displaying the four open order lines (orderno, product, open_qty, dlry_date)
         self.browser.implicitly_wait(10)
