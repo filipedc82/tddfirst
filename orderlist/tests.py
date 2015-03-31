@@ -139,12 +139,51 @@ class DeliveryAddPageTest(TestCase):
 
 
     def test_add_delivery_page_can_handle_POST_correct(self):
-        self.fail("Finish the test")
+        o = createTestOrder()
+        ol1 = createTestOrderLine(o)
+        ol2 = createTestOrderLine(o)
+        c = Client()
+        response = c.post('/deliveries/add/2,1,' , {'dlry_no':'DLRY666',
+                                                    'recipient':'myRecepient',
+                                                    'sender':'mySender',
+                                                    'dispatch_date':'2015-1-1',
+                                                    'form-TOTAL_FORMS': '4',
+                                                    'form-INITIAL_FORMS': '2',
+                                                    'form-MAX_NUM_FORMS': '1000',
+                                                    'form-0-product': str(ol1.product),
+                                                    'form-0-qty': str(ol1.qty-5),
+                                                    'form-0-order_no':(ol1.order.order_no),
+                                                    'form-0-order_line': str(ol1.id),
+                                                    'form-1-product':str(ol2.product),
+                                                    'form-1-qty':str(ol2.qty),
+                                                    'form-1-order_no':str(ol2.order.order_no),
+                                                    'form-1-order_line': str(ol2.id),
+                                                    'form-2-product':'thirdGuide',
+                                                    'form-2-qty':'1000',
+                                                    'form-2-order_no':'',
+                                                    'form-2-order_line':'',
+                                                    'form-3-product':'',
+                                                    'form-3-qty':'',
+                                                    'form-3-order_no':'',
+                                                    'form-3-order_line':'',
+                                                    })
+        self.assertEqual(Delivery.objects.count(),1)
+        new_Delivery = Delivery.objects.first()
+        self.assertEqual(new_Delivery.dlry_no, 'DLRY666')
+        self.assertEqual(DeliveryLine.objects.count(), 3)
+        self.assertEqual(DeliveryLine.objects.filter(delivery=new_Delivery).count(), 3)
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response,'/deliveries/'+str(new_Delivery.id)+'/')
 
     def test_add_delivery_page_can_handle_POST_incorrect(self):
-        self.fail("Finish the test")
-
-
+        o = createTestOrder()
+        ol1 = createTestOrderLine(o)
+        ol2 = createTestOrderLine(o)
+        c = Client()
+        response = c.post('/deliveries/add/2,1,', {'form-TOTAL_FORMS': '4', 'form-INITIAL_FORMS': '2', 'form-MAX_NUM_FORMS': '5'})
+        self.assertEqual(Delivery.objects.count(),0)
+        self.assertEqual(DeliveryLine.objects.count(),0)
+        self.assertEqual(response.status_code, 200)
 
 
 class DeliverySelectOLPageTest(TestCase):
@@ -372,6 +411,38 @@ class DeliveryLineFormTest(TestCase):
         form = DeliveryLineForm(data={})
         self.assertFalse(form.is_valid())
 
+    def test_dl_formset(self):
+        ol = createTestOrderLine(createTestOrder())
+        ol2 = createTestOrderLine(createTestOrder())
+        dlformset = formset_factory(DeliveryLineForm, extra=2)
+
+        data = {'dlry_no':'DLRY666',
+                'recipient':'myRecepient',
+                'sender':'mySender',
+                'dispatch_date':'2015-1-1',
+                'form-TOTAL_FORMS': '4',
+                'form-INITIAL_FORMS': '2',
+                'form-MAX_NUM_FORMS': '1000',
+                'form-0-product':'anotherGuide1',
+                'form-0-qty':'201',
+                'form-0-order_no':'4811',
+                'form-0-order_line':'1',
+                'form-1-product':'anotherGuide0',
+                'form-1-qty':'200',
+                'form-1-order_no':'4811',
+                'form-1-order_line':'1',
+                'form-2-product':'thirdGuide',
+                'form-2-qty':'1000',
+                'form-2-order_no':'',
+                'form-3-product':'',
+                'form-3-qty':'',
+                'form-3-order_no':'',
+                'form-3-order_line':'',
+                }
+
+        dlforms = dlformset(data)
+        self.assertTrue(dlforms.is_valid())
+
 
 
 ##MODELTESTS
@@ -429,14 +500,20 @@ class ModelTest(TestCase):
         dL.qty = 25.5
         dL.save()
 
+        dL2 = DeliveryLine()
+        dL2.delivery_id=second_delivery.id
+        dL2.product = 'aGuide'
+        dL2.qty = 25.5
+        dL2.save()
+
         saved_deliveries = Delivery.objects.all()
         self.assertEqual(saved_deliveries.count(), 2)
-        self.assertEqual(DeliveryLine.objects.all().count(),1)
+        self.assertEqual(DeliveryLine.objects.all().count(),2)
 
         first_saved_delivery = saved_deliveries[0]
         second_saved_delivery = saved_deliveries[1]
         self.assertEqual(first_saved_delivery.dlry_no, 'FirstDeliveryNo')
         self.assertEqual(second_saved_delivery.dlry_no, '2ndDeliveryNo')
-        self.assertEqual(second_saved_delivery.deliveryline_set.count(), 1)
+        self.assertEqual(second_saved_delivery.deliveryline_set.count(), 2)
         self.assertEqual(second_saved_delivery.deliveryline_set.last().product, 'aGuide')
-        self.assertEqual(second_saved_delivery.deliveryline_set.last().order_line_id, ol.id)
+        self.assertEqual(second_saved_delivery.deliveryline_set.first().order_line_id, ol.id)

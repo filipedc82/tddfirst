@@ -43,11 +43,12 @@ class DeliveryForm(ModelForm):
         }
 
 class DeliveryLineForm(ModelForm):
-    order_no = CharField(max_length=50, widget=TextInput(attrs={'readonly':'readonly', 'class':"form-control-static"}))
+    order_no = CharField(max_length=50,required=False, widget=TextInput(attrs={'readonly':'readonly', 'class':"form-control-static"}))
     class Meta:
         model = DeliveryLine
-        fields = ("product", "qty")
+        fields = ("product", "qty", "order_line")
         widgets = {
             'product': TextInput(attrs={'placeholder':"Enter Product", 'class':"form-control"}),
             'qty': NumberInput(attrs={'placeholder':"Enter Qty", 'class':"form-control"}),
+            'order_line': HiddenInput(),
         }

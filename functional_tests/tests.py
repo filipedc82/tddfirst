@@ -40,8 +40,8 @@ class NewVisitorTest(StaticLiveServerTestCase):
         #setattr(settings, 'DEBUG', true)
 
     def tearDown(self):
-       # self.browser.quit()
-        pass
+        self.browser.quit()
+       # pass
 
     def test_can_add_new_delivery(self):
         #prepare Orders
@@ -63,7 +63,8 @@ class NewVisitorTest(StaticLiveServerTestCase):
         create_link = self.browser.find_element_by_id('create_delivery_link')
         self.assertEqual(create_link.text,'Create new delivery')
         print(str(create_link.get_attribute('href')))
-        response = self.browser.get(self.live_server_url+ "/deliveries/add/")  #str(create_link.get_attribute('href')))
+        self.browser.get(self.live_server_url+ "/deliveries/add/")  #str(create_link.get_attribute('href')))
+
         # A window titled "select order lines for delivery" is displayed displaying the four open order lines (orderno, product, open_qty, dlry_date)
         self.browser.implicitly_wait(10)
 
@@ -80,8 +81,13 @@ class NewVisitorTest(StaticLiveServerTestCase):
         self.browser.find_element_by_id('id_submit_select_order_lines_button').click()
 
 
-        # A new page opens allowing to add a new delivery and 3 lines with the qty allowing edit
+        # A new page opens allowing to add a new delivery and 3 lines prefilled and two extra lines
         self.assertIn('Add Delivery', self.browser.title)
+        mgmtforminitial = self.browser.find_element_by_id('id_form-INITIAL_FORMS')
+        self.assertEqual(mgmtforminitial.get_attribute("value"), '3')
+        mgmtformtotal = self.browser.find_element_by_id('id_form-TOTAL_FORMS')
+        self.assertEqual(mgmtformtotal.get_attribute("value"), '5')
+
 
         # A text field is showing prompting to enter the Delivery no, dispatch date, sender and recipient name
         dlry_no_field = self.browser.find_element_by_id('id_dlry_no')
@@ -94,20 +100,29 @@ class NewVisitorTest(StaticLiveServerTestCase):
         self.assertEqual(date_field.get_attribute('placeholder'), 'Dispatch Date')
 
 
+        # He enters header data, changes a qty, adds a line  and clicks the Button "Save delivery"
+        dlry_no_field.send_keys("Dlry08/15")
+        recipient_field.send_keys("MWH")
+        sender_field.send_keys("DCA")
+        date_field.send_keys("2015-07-07")
+        self.browser.find_element_by_id("id_form-1-qty").send_keys("456")
+        self.browser.find_element_by_id("id_form-3-product").send_keys("Anotherguide")
+        self.browser.find_element_by_id("id_form-3-qty").send_keys("123")
+        self.browser.find_element_by_id("id_submit_select_order_lines_button").click()
 
+        # He is redirected to a detail page showing the delivery
+        self.assertIn('Delivery Dlry08/15', self.browser.title)
+        body = self.browser.find_element_by_tag_name('body')
+        self.assertIn("Dlry08/15", body.text)
+        self.assertIn("MWH", body.text)
+        self.assertIn("Anotherguide", body.text)
+        self.assertIn("123", body.text)
+        self.assertIn(o1.order_no, body.text)
 
-
-
-        # He changes a qty and clicks the Button "Save delivery"
-        self.fail("Finish the test")
-
-        # He is redirected to a page showing the delivery.
 
         # He clicks the "Return to Delivery List" Button and sees the Delivery List with the Delivery entry.
-
-
-
-
+        self.browser.find_element_by_id("delivery_list_link").click()
+        self.assertIn('Delivery List', self.browser.title)
 
 
     def test_can_add_a_new_order(self):

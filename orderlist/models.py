@@ -36,7 +36,7 @@ class Delivery(models.Model):
 
 class DeliveryLine(models.Model):
     delivery = models.ForeignKey(Delivery)
-    order_line = models.ForeignKey(OrderLine)
+    order_line = models.ForeignKey(OrderLine, blank=True, null=True)
     product = models.TextField(max_length=50)
     qty = models.FloatField()
 

@@ -52,16 +52,53 @@ class OrderDetailView(generic.DetailView):
 #     return render(request, 'order_detail.html's, context_dict)
 
 def add_delivery(request, olsid):
-    dlformset = formset_factory(DeliveryLineForm, extra=20)
+    dlformset = formset_factory(DeliveryLineForm, extra=2)
     if request.method == 'POST':
+        print("debug1")
         dform = DeliveryForm(request.POST)
-        dlforms = dlformset(request.POST)
-        # if form.is_valid():
-        #     new_order = form.save(commit=True)
-        #     return redirect('/orders/'+str(new_order.id)+'/')
-        #
-        # else:
-        #     print(form.errors)
+        dlforms = dlformset(request.POST, request.FILES)
+        if (dform.is_valid()):
+            print("Hello dform")
+            if (dlforms.is_valid()):
+                print("Hello dlforms")
+                newD= dform.save(commit=True)
+                print(newD.id)
+                print(dlforms.cleaned_data)
+                for dataset in dlforms.cleaned_data:
+                    if dataset:
+                        newDL = DeliveryLine()
+                        newDL.delivery = newD
+                        newDL.product= dataset.get('product')
+                        newDL.qty = dataset.get('qty')
+                        if dataset.get("order_line"):
+                            newDL.order_line_id = int(dataset.get("order_line").id)
+                        newDL.save()
+                        print("Yeah "+str(newDL))
+                return redirect(newD.get_absolute_url())
+
+
+
+
+                # for dlform in dlforms:
+                #     print(dlform)
+                #     if dlform.is_valid():
+                #         print("Going in")
+                #         print(dlform)
+                #         newDL=dlform.save(commit=False)
+                #         newDL.delivery_id = newD.id
+                #         newDL.order_line_id = 1
+                #         newDL.save()
+                # newD.save()
+
+            else:
+                print(dlforms.errors)
+        else:
+            print(dform.errors)
+            #     new_order = form.save(commit=True)
+            #     return redirect('/orders/'+str(new_order.id)+'/')
+            #
+            # else:
+            #     print(form.errors)
 
     else:
         dform = DeliveryForm()
@@ -69,24 +106,20 @@ def add_delivery(request, olsid):
         olineids = olsid.split(",")[:-1]
         #todo: make robust to cope with forgotten trailing comma
 
-        print(olineids)
         olines = []
-        print(OrderLine.objects.all())
         for olineid in olineids:
             olines.append(OrderLine.objects.get(pk=olineid))
-            print(olines)
         data = []
         for oline in olines:
             data.append({'order_no': oline.order_id,
                          'qty': oline.qty,
                          'product':oline.product,
+                         'order_line':oline.id
                         })
-            print(data)
         dlforms = dlformset(initial=data)
 
     return render(request, 'add_delivery.html',{'dform': dform,
                                                 'dlforms': dlforms})
-
 
 
 
