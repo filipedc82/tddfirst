@@ -107,6 +107,33 @@ def add_delivery(request, olsid):
 
 
 
+def select_dl(request):
+    if request.method == "POST":
+        dl_string = ""
+        for key in request.POST.keys():
+            if ("selected" in key) and str(request.POST.get(key))== 'on' :
+                dlsformno = key[key.index("-")+1:key.index("selected")-1]
+                dlfield = "form-"+str(dlsformno)+"-delivery_line_id"
+                dl_string = dl_string + str(request.POST.get(dlfield)) + ","
+        return redirect('/invoices/add/'+dl_string)
+
+    else:
+        data = []
+        for dl in DeliveryLine.objects.all():
+             data.append({'delivery_line_id': dl.id,
+                          'qty': dl.qty,
+                          'delivery_no':dl.delivery.dlry_no,
+                          'product': dl.product,
+                          'recipient': dl.delivery.recipient,
+                          'delivery_date':dl.delivery.dispatch_date
+                          })
+             print(data)
+        fs = formset_factory(DeliveryLineSelectForm, extra=0)
+        dlsforms = fs(initial = data)
+        print("FORMS:")
+        print(dlsforms)
+
+        return render(request, 'select_dl.html', {'delivery_line_select_forms': dlsforms })
 
 
 def select_ol(request):
@@ -118,7 +145,6 @@ def select_ol(request):
                 olfield = "form-"+str(olsformno)+"-order_line_id"
                 ol_string = ol_string + str(request.POST.get(olfield)) + ","
         return redirect('/deliveries/add/'+ol_string)
-
 
     else:
         data = []

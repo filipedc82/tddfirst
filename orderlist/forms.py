@@ -31,6 +31,23 @@ class OrderLineSelectForm(Form):
     customer = CharField(max_length=50, widget=TextInput(attrs={'readonly':'readonly', 'class':"form-control-static"}))
     selected = BooleanField(required=True)
 
+class DeliveryLineSelectForm(ModelForm):
+    selected = BooleanField(required=True)
+    delivery_date = DateTimeField(widget=TextInput(attrs={'readonly':'readonly', 'class':"form-control-static"}))
+    recipient = CharField(max_length=50, widget=TextInput(attrs={'readonly':'readonly', 'class':"form-control-static"}))
+    delivery_no = CharField(max_length=50, widget=TextInput(attrs={'readonly':'readonly', 'class':"form-control-static"}))
+    delivery_line_id = IntegerField(required=False, widget=HiddenInput())
+
+    class Meta:
+        model = DeliveryLine
+        fields = {'product', 'qty'}
+        widgets = {
+            'delivery_no': TextInput(attrs={'readonly':'readonly', 'class':"form-control-static"}),
+            'product': TextInput(attrs={'readonly':'readonly', 'class':"form-control-static"}),
+            'qty': NumberInput(attrs={'readonly':'readonly', 'class':"form-control-static"}),
+        }
+
+
 class DeliveryForm(ModelForm):
     class Meta:
         model = Delivery

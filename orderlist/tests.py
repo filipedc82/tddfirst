@@ -133,6 +133,28 @@ class InvoiceDetailTest(TestCase):
         self.assertIn(il.product, response.content.decode())
         self.assertIn(il.order_line.order.order_no, response.content.decode())
 
+class InvoiceSelectDLPageTest(TestCase):
+
+    def test_select_dl_url_resolves_to_select_ol_view(self):
+        found = resolve('/invoices/add/')
+        self.assertEqual(found.func, select_dl)
+
+    def test_select_dl_page_returns_correct_html_template(self):
+        c = Client()
+        response = c.get('/invoices/add/')
+        self.assertTemplateUsed(response, 'select_dl.html')  # correct template
+
+    def test_select_dl_page_renders_correct_delivery_line_select_forms(self):
+        delivery = createTestDelivery()
+        dl = createTestDeliveryLine(delivery)
+        c = Client()
+        response = c.get('/invoices/add/')
+        dlsformcandidate= response.context['delivery_line_select_forms'][0]
+        self.assertIs(type(dlsformcandidate), DeliveryLineSelectForm) 	#Sanity-check that your form is rendered
+        self.assertIn(delivery.dlry_no, response.content.decode())
+        self.assertIn(dl.product, response.content.decode())
+
+
 
 class DeliveryListPageTest(TestCase):
 
@@ -455,7 +477,7 @@ class OrderLineFormTest(TestCase):
 class OrderLineSelectFormTest(TestCase):
 
     def test_line_form_validation_for_blank_items(self):
-        form = OrderLineForm(data={'product': ''})
+        form = OrderLineSelectForm(data={'product': ''})
         self.assertFalse(form.is_valid())
 
     def test_ol_select_form_elements_ro_except_select(self):
@@ -474,6 +496,7 @@ class OrderLineSelectFormTest(TestCase):
         self.assertTrue(olsform.fields['customer'].widget.attrs.get("class")=="form-control-static")
         self.assertIsInstance(olsform.fields['order_line_id'].widget, widgets.HiddenInput)
         self.assertIsInstance(olsform.fields['selected'], BooleanField)
+
 
 
 class DeliveryFormTest(TestCase):
@@ -519,7 +542,29 @@ class DeliveryLineFormTest(TestCase):
         dlforms = dlformset(data)
         self.assertTrue(dlforms.is_valid())
 
+class DeliveryLineSelectFormTest(TestCase):
 
+    def test_line_form_validation_for_blank_items(self):
+        form = DeliveryLineSelectForm(data={'product': ''})
+        self.assertFalse(form.is_valid())
+
+    def test_dl_select_form_elements_ro_except_select(self):
+        d = createTestDelivery()
+        dl = createTestDeliveryLine(d)
+        dldata = {  'delivery_line_id': dl.id,
+                    'qty': dl.qty,
+                    'delivery_no':dl.delivery.dlry_no,
+                    'product': dl.product,
+                    'recipient': dl.delivery.recipient,
+                    }
+        dlsform = DeliveryLineSelectForm(dldata)
+        self.assertTrue(dlsform.fields['delivery_no'].widget.attrs.get("class")=="form-control-static")
+        self.assertTrue(dlsform.fields['product'].widget.attrs.get("class")=="form-control-static")
+        self.assertTrue(dlsform.fields['qty'].widget.attrs.get("class")=="form-control-static")
+        self.assertTrue(dlsform.fields['recipient'].widget.attrs.get("class")=="form-control-static")
+        self.assertIsInstance(dlsform.fields['delivery_line_id'].widget, widgets.HiddenInput)
+        self.assertIsInstance(dlsform.fields['selected'], BooleanField)
+        #todo:work here!
 
 ##MODELTESTS
 class ModelTest(TestCase):

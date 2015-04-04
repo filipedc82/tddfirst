@@ -20,7 +20,7 @@ urlpatterns = patterns('',
     url(r'^invoices/$', views.InvoiceListView.as_view(), name='invoice_list'),
     url(r'^invoices/(?P<pk>\d+)/$', views.InvoiceDetailView.as_view(), name='invoice_detail'),
    # url(r'^invoices/add/(?P<olsid>.+)$', 'orderlist.views.add_invoice', name='add_invoice'),
-   # url(r'^invoices/add/$', 'orderlist.views.select_dl', name='select_dl'),
+    url(r'^invoices/add/$', 'orderlist.views.select_dl', name='select_dl'),
 
 )
 
