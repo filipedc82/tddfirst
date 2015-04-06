@@ -24,7 +24,7 @@ class NewVisitorTest(StaticLiveServerTestCase):
 
     def tearDown(self):
         self.browser.quit()
-       # pass
+      #  pass
 
 
     def test_can_add_new_invoice(self):
@@ -38,6 +38,12 @@ class NewVisitorTest(StaticLiveServerTestCase):
         i1 = createTestInvoice()
         il1 = createTestInvoiceLine(i1)
         il2 = createTestInvoiceLine(i1)
+        d1 = createTestDelivery()
+        d1l1 = createTestDeliveryLine(d1)
+        d1l2 = createTestDeliveryLine(d1)
+        d2 = createTestDelivery()
+        d2l1 = createTestDeliveryLine(d2)
+        d2l2 = createTestDeliveryLine(d2)
 
 
         # Klaus opens the browser and goes to the invoice page
@@ -63,14 +69,44 @@ class NewVisitorTest(StaticLiveServerTestCase):
         self.assertEqual(create_link.text,'Create new invoice')
         self.browser.get(self.live_server_url+ "/invoices/add/")
 
-        # A window titled "select delivery lines for invoice" is displayed displaying the four delivery lines
+        # A window titled "select delivery lines for invoice" is displayed displaying the six delivery lines
+        self.assertIn('Select Delivery Lines for new invoice', self.browser.find_element_by_tag_name('h1').text)
+        body = self.browser.find_element_by_tag_name('body')
+        self.assertTrue(body.text.count("Selected:")==6)
 
+        # He selects the lines 3, 5, and 6, hits the confirm button #todo check that he cant edit
+        self.browser.find_element_by_id('id_form-2-selected').click()
+        self.browser.find_element_by_id('id_form-4-selected').click()
+        self.browser.find_element_by_id('id_form-5-selected').click()
+        self.browser.find_element_by_id('id_submit_select_delivery_lines_button').click()
 
+        # He is redirected to a new page for adding invoice showing three prefilled lines and two extra lines
+        self.assertIn('Add Invoice', self.browser.title)
+        mgmtforminitial = self.browser.find_element_by_id('id_form-INITIAL_FORMS')
+        self.assertEqual(mgmtforminitial.get_attribute("value"), '3')
+        mgmtformtotal = self.browser.find_element_by_id('id_form-TOTAL_FORMS')
+        self.assertEqual(mgmtformtotal.get_attribute("value"), '5')
 
+        # He enters header info, changes the qty on line 1, the unit price on line 2 and enters an additional position, then hits confirm button
+        self.browser.find_element_by_id('id_invoice_no').send_keys("Invoice0815")
+        self.browser.find_element_by_id('id_debitor').send_keys("myDebitor")
+        self.browser.find_element_by_id('id_invoice_date').send_keys("2015-05-05")
+        self.browser.find_element_by_id('id_form-0-qty').send_keys("120")
+        self.browser.find_element_by_id('id_form-1-unit_price').send_keys("20.5")
+        self.browser.find_element_by_id('id_form-3-product').send_keys("YAGuide")
+        self.browser.find_element_by_id('id_form-3-qty').send_keys("10")
+        self.browser.find_element_by_id('id_form-3-unit_price').send_keys("10")
 
+        self.browser.find_element_by_id('id_submit_invoice_button').click()
 
+        # He is redirected to a detail page showing the invoice details
+        self.assertIn('Invoice Invoice0815', self.browser.title)
+        body = self.browser.find_element_by_tag_name('body')
+        self.assertIn("Invoice0815", body.text)
+        self.assertIn("myDebitor", body.text)
+        self.assertIn("YAGuide", body.text)
+        self.assertTrue(body.text.count("uide")==4)
 
-        self.fail("finish the test!")
 
     def test_can_add_new_delivery(self):
         #prepare Orders
@@ -98,14 +134,13 @@ class NewVisitorTest(StaticLiveServerTestCase):
         self.browser.get(self.live_server_url+ "/deliveries/add/")
 
         # A window titled "select order lines for delivery" is displayed displaying the four open order lines (orderno, product, open_qty, dlry_date)
-        self.browser.implicitly_wait(10)
 
         self.assertIn('Select Order Lines for new delivery', self.browser.find_element_by_tag_name('h1').text)
 
         body = self.browser.find_element_by_tag_name('body')
         self.assertTrue(body.text.count("Selected:")==4)
 
-        # He can't edit some other fields but selects order lines 1-3 and clicks the "Confirm Selection" #ckech
+        # He can't edit some other fields but selects order lines 1-3 and clicks the "Confirm Selection" #todo: check that he can't edit
         self.assertTrue(self.browser.find_element_by_id('id_form-0-product').get_attribute("class")=="form-control-static")
         self.browser.find_element_by_id('id_form-0-selected').click()
         self.browser.find_element_by_id('id_form-1-selected').click()
@@ -140,7 +175,7 @@ class NewVisitorTest(StaticLiveServerTestCase):
         self.browser.find_element_by_id("id_form-1-qty").send_keys("456")
         self.browser.find_element_by_id("id_form-3-product").send_keys("Anotherguide")
         self.browser.find_element_by_id("id_form-3-qty").send_keys("123")
-        self.browser.find_element_by_id("id_submit_select_order_lines_button").click()
+        self.browser.find_element_by_id("id_submit_delivery_button").click()
 
         # He is redirected to a detail page showing the delivery
         self.assertIn('Delivery Dlry08/15', self.browser.title)

@@ -51,7 +51,6 @@ def createTestInvoice():
     i.save()
     return i
 
-
 def createTestInvoiceLine(my_invoice):
     il = InvoiceLine()
     il.invoice = my_invoice
@@ -154,11 +153,130 @@ class InvoiceSelectDLPageTest(TestCase):
         self.assertIn(delivery.dlry_no, response.content.decode())
         self.assertIn(dl.product, response.content.decode())
 
+    def test_select_dl_view_creates_correct_get_url(self):
+        delivery = createTestDelivery()
+        dl = createTestDeliveryLine(delivery)
+        dl2 = createTestDeliveryLine(delivery)
+        dl3 = createTestDeliveryLine(delivery)
+        c = Client()
+        response = c.post('/invoices/add/', {
+                     'form-0-delivery_line_id': dl.id,
+                     'form-0-qty': dl.qty,
+                     'form-0-delivery_no':dl.delivery.dlry_no,
+                     'form-0-product': dl.product,
+                     'form-0-recipient': dl.delivery.recipient,
+                     'form-0-delivery_date':dl.delivery.dispatch_date,
+                     'form-0-selected': 'on',
+
+                     'form-1-delivery_line_id': dl2.id,
+                     'form-1-qty': dl2.qty,
+                     'form-1-delivery_no':dl2.delivery.dlry_no,
+                     'form-1-product': dl2.product,
+                     'form-1-recipient': dl2.delivery.recipient,
+                     'form-1-delivery_date':dl2.delivery.dispatch_date,
+                     'form-1-selected': 'on',
+
+                     'form-2-delivery_line_id': dl3.id,
+                     'form-2-qty': dl3.qty,
+                     'form-2-delivery_no':dl3.delivery.dlry_no,
+                     'form-2-product': dl3.product,
+                     'form-2-recipient': dl3.delivery.recipient,
+                     'form-2-delivery_date':dl3.delivery.dispatch_date,
+                     'form-2-selected': 'off',
+                     })
+        self.assertIn(str(dl.id),str(response.url))
+        self.assertIn(str(dl2.id),str(response.url))
+        self.assertIn("/invoices/add/",str(response.url))
+
+class InvoiceAddPageTest(TestCase):
+
+    def test_add_invoice_url_resolves_to_add_delivery_view(self):
+        found = resolve('/invoices/add/1,2,')
+        self.assertEqual(found.func, add_invoice)
+
+    def test_add_invoice_url_returns_correct_html(self):
+        d = createTestDelivery()
+        dl1 = createTestDeliveryLine(d)
+        dl2 = createTestDeliveryLine(d)
+        response = Client().get('/invoices/add/1,2,')
+        self.assertTemplateUsed(response, 'add_invoice.html')  # correct template
+
+    def test_add_invoice_page_renders_correct_forms(self):
+        d = createTestDelivery()
+        dl1 = createTestDeliveryLine(d)
+        dl2 = createTestDeliveryLine(d)
+        c = Client()
+        response = c.get('/invoices/add/2,1,')
+        self.assertIsInstance(response.context['iform'], InvoiceForm) 	#Sanity-check that your form is rendered, and its errors are displayed.
+        dlformcandidate= response.context['ilforms'][0]
+        self.assertIs(type(dlformcandidate), InvoiceLineForm) 	#Sanity-check that your form is rendered
+
+    def test_add_invoice_page_can_handle_POST_correct(self):
+        d = createTestDelivery()
+        dl1 = createTestDeliveryLine(d)
+        dl2 = createTestDeliveryLine(d)
+        c = Client()
+        response = c.post('/invoices/add/2,1,' , {'invoice_no':'INVOICE666',
+                                                    'debitor':'myDebitor',
+                                                    'invoice_date':'2015-1-1',
+                                                    'form-TOTAL_FORMS': '4',
+                                                    'form-INITIAL_FORMS': '2',
+                                                    'form-MAX_NUM_FORMS': '1000',
+
+                                                    'form-0-product': str(dl1.product),
+                                                    'form-0-qty': str(dl1.qty),
+                                                    'form-0-order_no':str(dl1.order_line.order.order_no),
+                                                    'form-0-order_line': str(dl1.order_line.id),
+                                                    'form-0-delivery_no': str(dl1.delivery.dlry_no),
+                                                    'form-0-delivery_line': str(dl1.id),
+                                                    'form-0-unit_price': str(dl1.order_line.unit_price),
+
+                                                    'form-1-product':str(dl2.product),
+                                                    'form-1-qty':str(dl2.qty),
+                                                    'form-1-order_no':str(dl2.order_line.order.order_no),
+                                                    'form-1-order_line': str(dl2.order_line.id),
+                                                    'form-1-delivery_no': str(dl2.delivery.dlry_no),
+                                                    'form-1-delivery_line': str(dl2.id),
+                                                    'form-1-unit_price': str(dl2.order_line.unit_price),
+
+                                                    'form-2-product':'thirdGuide',
+                                                    'form-2-qty':'1000',
+                                                    'form-2-order_no':'',
+                                                    'form-2-order_line':'',
+                                                    'form-2-delivery_no': '',
+                                                    'form-2-delivery_line': '',
+                                                    'form-2-unit_price': '15',
+
+                                                    'form-3-product':'',
+                                                    'form-3-qty':'',
+                                                    'form-3-order_no':'',
+                                                    'form-3-order_line':'',
+                                                    })
+        self.assertEqual(response.status_code, 302)
+        new_Invoice = Invoice.objects.first()
+        self.assertRedirects(response,'/invoices/'+str(new_Invoice.id)+'/')
+        self.assertEqual(Invoice.objects.count(),1)
+        self.assertEqual(new_Invoice.invoice_no, 'INVOICE666')
+        self.assertEqual(InvoiceLine.objects.count(), 3)
+        self.assertEqual(InvoiceLine.objects.filter(invoice=new_Invoice).count(), 3)
+
+    def test_add_invoice_page_can_handle_POST_incorrect(self):
+        d = createTestOrder()
+        dl1 = createTestOrderLine(d)
+        dl2 = createTestOrderLine(d)
+        c = Client()
+        response = c.post('/invoices/add/2,1,', {'form-TOTAL_FORMS': '4', 'form-INITIAL_FORMS': '2', 'form-MAX_NUM_FORMS': '5'})
+        self.assertEqual(Invoice.objects.count(),0)
+        self.assertEqual(InvoiceLine.objects.count(),0)
+        self.assertEqual(response.status_code, 200)
+
+
+
 
 
 class DeliveryListPageTest(TestCase):
 
-    def test_deliveries_url_resolves_to_deliveries_list_view(self):
+    def test_deliveries_url_resdlves_to_deliveries_list_view(self):
         found = resolve('/deliveries/')
         self.assertEqual(found.view_name, 'delivery_list')
 
@@ -307,9 +425,6 @@ class DeliverySelectOLPageTest(TestCase):
         self.assertIs(type(olsformcandidate), OrderLineSelectForm) 	#Sanity-check that your form is rendered
         self.assertIn(order.order_no, response.content.decode())
         self.assertIn(ol.product, response.content.decode())
-
-
-
 
     def test_select_ol_view_creates_correct_get_url(self):
         order = createTestOrder()
@@ -564,7 +679,6 @@ class DeliveryLineSelectFormTest(TestCase):
         self.assertTrue(dlsform.fields['recipient'].widget.attrs.get("class")=="form-control-static")
         self.assertIsInstance(dlsform.fields['delivery_line_id'].widget, widgets.HiddenInput)
         self.assertIsInstance(dlsform.fields['selected'], BooleanField)
-        #todo:work here!
 
 ##MODELTESTS
 class ModelTest(TestCase):

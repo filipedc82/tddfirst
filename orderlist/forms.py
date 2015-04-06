@@ -32,11 +32,11 @@ class OrderLineSelectForm(Form):
     selected = BooleanField(required=True)
 
 class DeliveryLineSelectForm(ModelForm):
-    selected = BooleanField(required=True)
     delivery_date = DateTimeField(widget=TextInput(attrs={'readonly':'readonly', 'class':"form-control-static"}))
     recipient = CharField(max_length=50, widget=TextInput(attrs={'readonly':'readonly', 'class':"form-control-static"}))
     delivery_no = CharField(max_length=50, widget=TextInput(attrs={'readonly':'readonly', 'class':"form-control-static"}))
     delivery_line_id = IntegerField(required=False, widget=HiddenInput())
+    selected = BooleanField(required=True)
 
     class Meta:
         model = DeliveryLine
@@ -47,6 +47,29 @@ class DeliveryLineSelectForm(ModelForm):
             'qty': NumberInput(attrs={'readonly':'readonly', 'class':"form-control-static"}),
         }
 
+class InvoiceLineForm(ModelForm):
+    delivery_no = CharField(max_length=50,required=False, widget=TextInput(attrs={'readonly':'readonly', 'class':"form-control-static"}))
+    order_no = CharField(max_length=50,required=False, widget=TextInput(attrs={'readonly':'readonly', 'class':"form-control-static"}))
+    class Meta:
+        model = InvoiceLine
+        fields = ("product", "qty", "order_line","unit_price", "delivery_line")
+        widgets = {
+            'product': TextInput(attrs={'placeholder':"Enter Product", 'class':"form-control"}),
+            'qty': NumberInput(attrs={'placeholder':"Enter Qty", 'class':"form-control"}),
+            'unit_price': NumberInput(attrs={'placeholder':"Enter Unit Price", 'class':"form-control"}),
+            'delivery_line': HiddenInput(),
+            'order_line': HiddenInput(),
+        }
+
+class InvoiceForm(ModelForm):
+    class Meta:
+        model = Invoice
+        fields = '__all__'
+        widgets = {
+            'invoice_no': TextInput(attrs={'placeholder':"Invoice Number", 'class':"form-control"}),
+            'debitor': TextInput(attrs={'placeholder':"Debitor", 'class':"form-control"}),
+            'invoice_date': DateInput(attrs={'placeholder':"invoice Date",'class':"form-control",}),
+        }
 
 class DeliveryForm(ModelForm):
     class Meta:

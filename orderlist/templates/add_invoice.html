@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block  title_text%} Add Invoice{% endblock %}
+{% block  header_text%} Add Invoice{% endblock %}
+
+{% block  page_content%}
+
+    <form action="{{request.get_full_path}}" method="POST">
+        {% csrf_token %}
+        {{ iform }}
+        </br>
+        </br>
+
+        <table>
+            {{ ilforms.management_form }}
+            {% for ilform in ilforms %}
+                {{ ilform.as_table }}
+        {% endfor %}
+        </table>
+
+        <input type="submit" class="btn btn-default" id="id_submit_invoice_button" value="Save Invoice" />
+    </form>
+
+ {% endblock %}

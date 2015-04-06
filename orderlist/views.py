@@ -94,7 +94,7 @@ def add_delivery(request, olsid):
             olines.append(OrderLine.objects.get(pk=olineid))
         data = []
         for oline in olines:
-            data.append({'order_no': oline.order_id,
+            data.append({'order_no': oline.order.order_no,
                          'qty': oline.qty,
                          'product':oline.product,
                          'order_line':oline.id
@@ -104,6 +104,60 @@ def add_delivery(request, olsid):
     return render(request, 'add_delivery.html',{'dform': dform,
                                                 'dlforms': dlforms})
 
+
+def add_invoice(request, dlsid):
+    ilformset = formset_factory(InvoiceLineForm, extra=2)
+    if request.method == 'POST':
+        iform = InvoiceForm(request.POST)
+        ilforms = ilformset(request.POST, request.FILES)
+        if (iform.is_valid()):
+            print("ilforms: "+str(ilforms))
+
+            if (ilforms.is_valid()):
+                newI= iform.save(commit=True)
+                for dataset in ilforms.cleaned_data:
+                    if dataset:
+                        newIL = InvoiceLine()
+                        newIL.invoice = newI
+                        newIL.product= dataset.get('product')
+                        newIL.qty = dataset.get('qty')
+                        newIL.unit_price = dataset.get('unit_price')
+
+                        if dataset.get("order_line"):
+                            newIL.order_line_id = int(dataset.get("order_line").id)
+                        if dataset.get("delivery_line"):
+                            newIL.delivery_line_id = int(dataset.get("delivery_line").id)
+                        newIL.save()
+                return redirect(newI.get_absolute_url())
+
+            else:
+                print("ilforms errors: "+ str(ilforms.errors))
+        else:
+            print("iforms errors: "+str(iform.errors))
+
+    else:
+        iform = InvoiceForm()
+
+        dlineids = dlsid.split(",")[:-1]
+        #todo: make robust to cope with forgotten trailing comma
+
+        dlines = []
+        for dlineid in dlineids:
+            dlines.append(DeliveryLine.objects.get(pk=dlineid))
+        data = []
+        for dline in dlines:
+            data.append({'order_no': dline.order_line.order.order_no,
+                         'delivery_no': dline.delivery.dlry_no,
+                         'product':dline.product,
+                         'qty': dline.qty,
+                         'unit_price': dline.order_line.unit_price,
+                         'delivery_line':dline.id,
+                         'order_line': dline.order_line_id,
+                        })
+        ilforms = ilformset(initial=data)
+
+    return render(request, 'add_invoice.html',{'iform': iform,
+                                                'ilforms': ilforms})
 
 
 
