@@ -13,26 +13,30 @@
     Invoice Value: {{ invoice.get_invoice_value }}<br/>
 
     <table class="table" id="id_invoice_line_table">
-        <tr>
-            <th>Product</th>
-            <th>Quantity</th>
-            <th>Unit Price</th>
-            <th>Value</th>
-            <th>Order No</th>
-            <th>Delivery No</th>
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th>Value</th>
+                <th>Order No</th>
+                <th>Delivery No</th>
 
-        </tr>
-        {% for invoiceline in invoice.invoiceline_set.all %}
-             <tr>
-                <td> {{ invoiceline.product }}</td>
-                <td> {{ invoiceline.qty }}</td>
-                <td> {{ invoiceline.unit_price }}</td>
-                <td> {{ invoiceline.get_line_value }}</td>
-                <td> {{ invoiceline.order_line.order.order_no }}</td>
-                <td> {{ invoiceline.delivery_line.delivery.dlry_no }}</td>
-                <td></td>
             </tr>
-        {% endfor %}
+        </thead>
+        <tbody>
+            {% for invoiceline in invoice.invoiceline_set.all %}
+                 <tr>
+                    <td> {{ invoiceline.product }}</td>
+                    <td> {{ invoiceline.qty }}</td>
+                    <td> {{ invoiceline.unit_price }}</td>
+                    <td> {{ invoiceline.get_line_value }}</td>
+                    <td> {{ invoiceline.order_line.order.order_no }}</td>
+                    <td> {{ invoiceline.delivery_line.delivery.dlry_no }}</td>
+                    <td></td>
+                </tr>
+            {% endfor %}
+        </tbody>
     </table>
 
 {% endblock %}
