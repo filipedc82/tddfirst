@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block  title_text%} Product List{% endblock %}
+{% block  header_text%} Product List {% endblock %}
+
+{% block  page_content%}
+        <a id="create_product_link" href="/products/add/">Create new product</a>
+        <br/>
+        <table id="id_product_table" class="table">
+            <tr>
+                <th>Product Group</th>
+                <th>Own Product No</th>
+                <th>Customer Alias</th>
+            </tr>
+             {% for product in object_list %}
+                 <tr>
+                    <td> {{ product.product_group }}</td>
+                    <td> <a href="/products/{{ product.id }}/">{{ product.own_product_no }}</a></td>
+                    <td> Placeholder</td>
+                </tr>
+             {% endfor %}
+
+
+        </table>
+
+ {% endblock %}

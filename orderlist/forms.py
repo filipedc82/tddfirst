@@ -76,7 +76,7 @@ class DeliveryForm(ModelForm):
         model = Delivery
         fields = '__all__'
         widgets = {
-            'dlry_no': TextInput(attrs={'placeholder':"Delivery Number", 'class':"form-control"}),
+            'delivery_no': TextInput(attrs={'placeholder':"Delivery Number", 'class':"form-control"}),
             'recipient': TextInput(attrs={'placeholder':"Recipient", 'class':"form-control"}),
             'sender': TextInput(attrs={'placeholder':"Sender", 'class':"form-control"}),
             'dispatch_date': DateInput(attrs={'placeholder':"Dispatch Date",'class':"form-control",}),

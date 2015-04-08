@@ -26,7 +26,7 @@ def createTestOrderLine(my_order):
 
 def createTestDelivery():
     dlry = Delivery()
-    dlry.dlry_no = str(Delivery.objects.count()+815)
+    dlry.delivery_no = str(Delivery.objects.count()+815)
     dlry.recipient = "Lego"
     dlry.sender = "DCA"
     dlry.dispatch_date = "2015-04-05"
@@ -64,6 +64,13 @@ def createTestInvoiceLine(my_invoice):
     il.save()
     return il
 
+def createTestProduct(product_group="VG"):
+    p = Product()
+    p.product_group = product_group
+    p.own_product_no = "MyProduct"+str(Product.objects.count())
+    p.save()
+    return p
+
 
 ## PAGE and VIEW TESTS
 class HomePageTest(TestCase):
@@ -78,6 +85,27 @@ class HomePageTest(TestCase):
         response = home_page(request)
         expected_html = render_to_string('home.html')
         self.assertEqual(response.content.decode(), expected_html)
+
+class ProductListPageTest(TestCase):
+
+    def test_products_url_resolves_to_invoices_list_view(self):
+        found = resolve('/products/')
+        self.assertEqual(found.view_name, 'product_list')
+
+    def test_product_list_page_returns_correct_html_GET(self):
+        c = Client()
+        response = c.get('/products/')
+        expected_html = render_to_string('product_list.html')
+        self.assertEqual(response.content.decode(), expected_html)
+
+    def test_product_list_displays_products(self):
+        createTestProduct()
+        createTestProduct()
+        c = Client()
+        response = c.get('/products/')
+        self.assertIn('VG', response.content.decode())
+        self.assertIn('MyProduct0', response.content.decode())
+        self.assertIn('MyProduct1', response.content.decode())
 
 
 class InvoiceListPageTest(TestCase):
@@ -150,7 +178,7 @@ class InvoiceSelectDLPageTest(TestCase):
         response = c.get('/invoices/add/')
         dlsformcandidate= response.context['delivery_line_select_forms'][0]
         self.assertIs(type(dlsformcandidate), DeliveryLineSelectForm) 	#Sanity-check that your form is rendered
-        self.assertIn(delivery.dlry_no, response.content.decode())
+        self.assertIn(delivery.delivery_no, response.content.decode())
         self.assertIn(dl.product, response.content.decode())
 
     def test_select_dl_view_creates_correct_get_url(self):
@@ -162,7 +190,7 @@ class InvoiceSelectDLPageTest(TestCase):
         response = c.post('/invoices/add/', {
                      'form-0-delivery_line_id': dl.id,
                      'form-0-qty': dl.qty,
-                     'form-0-delivery_no':dl.delivery.dlry_no,
+                     'form-0-delivery_no':dl.delivery.delivery_no,
                      'form-0-product': dl.product,
                      'form-0-recipient': dl.delivery.recipient,
                      'form-0-delivery_date':dl.delivery.dispatch_date,
@@ -170,7 +198,7 @@ class InvoiceSelectDLPageTest(TestCase):
 
                      'form-1-delivery_line_id': dl2.id,
                      'form-1-qty': dl2.qty,
-                     'form-1-delivery_no':dl2.delivery.dlry_no,
+                     'form-1-delivery_no':dl2.delivery.delivery_no,
                      'form-1-product': dl2.product,
                      'form-1-recipient': dl2.delivery.recipient,
                      'form-1-delivery_date':dl2.delivery.dispatch_date,
@@ -178,7 +206,7 @@ class InvoiceSelectDLPageTest(TestCase):
 
                      'form-2-delivery_line_id': dl3.id,
                      'form-2-qty': dl3.qty,
-                     'form-2-delivery_no':dl3.delivery.dlry_no,
+                     'form-2-delivery_no':dl3.delivery.delivery_no,
                      'form-2-product': dl3.product,
                      'form-2-recipient': dl3.delivery.recipient,
                      'form-2-delivery_date':dl3.delivery.dispatch_date,
@@ -227,7 +255,7 @@ class InvoiceAddPageTest(TestCase):
                                                     'form-0-qty': str(dl1.qty),
                                                     'form-0-order_no':str(dl1.order_line.order.order_no),
                                                     'form-0-order_line': str(dl1.order_line.id),
-                                                    'form-0-delivery_no': str(dl1.delivery.dlry_no),
+                                                    'form-0-delivery_no': str(dl1.delivery.delivery_no),
                                                     'form-0-delivery_line': str(dl1.id),
                                                     'form-0-unit_price': str(dl1.order_line.unit_price),
 
@@ -235,7 +263,7 @@ class InvoiceAddPageTest(TestCase):
                                                     'form-1-qty':str(dl2.qty),
                                                     'form-1-order_no':str(dl2.order_line.order.order_no),
                                                     'form-1-order_line': str(dl2.order_line.id),
-                                                    'form-1-delivery_no': str(dl2.delivery.dlry_no),
+                                                    'form-1-delivery_no': str(dl2.delivery.delivery_no),
                                                     'form-1-delivery_line': str(dl2.id),
                                                     'form-1-unit_price': str(dl2.order_line.unit_price),
 
@@ -269,9 +297,6 @@ class InvoiceAddPageTest(TestCase):
         self.assertEqual(Invoice.objects.count(),0)
         self.assertEqual(InvoiceLine.objects.count(),0)
         self.assertEqual(response.status_code, 200)
-
-
-
 
 
 class DeliveryListPageTest(TestCase):
@@ -358,7 +383,7 @@ class DeliveryAddPageTest(TestCase):
         ol1 = createTestOrderLine(o)
         ol2 = createTestOrderLine(o)
         c = Client()
-        response = c.post('/deliveries/add/2,1,' , {'dlry_no':'DLRY666',
+        response = c.post('/deliveries/add/2,1,' , {'delivery_no':'DLRY666',
                                                     'recipient':'myRecepient',
                                                     'sender':'mySender',
                                                     'dispatch_date':'2015-1-1',
@@ -384,7 +409,7 @@ class DeliveryAddPageTest(TestCase):
                                                     })
         self.assertEqual(Delivery.objects.count(),1)
         new_Delivery = Delivery.objects.first()
-        self.assertEqual(new_Delivery.dlry_no, 'DLRY666')
+        self.assertEqual(new_Delivery.delivery_no, 'DLRY666')
         self.assertEqual(DeliveryLine.objects.count(), 3)
         self.assertEqual(DeliveryLine.objects.filter(delivery=new_Delivery).count(), 3)
         self.assertEqual(response.status_code, 302)
@@ -630,7 +655,7 @@ class DeliveryLineFormTest(TestCase):
         ol2 = createTestOrderLine(createTestOrder())
         dlformset = formset_factory(DeliveryLineForm, extra=2)
 
-        data = {'dlry_no':'DLRY666',
+        data = {'delivery_no':'DLRY666',
                 'recipient':'myRecepient',
                 'sender':'mySender',
                 'dispatch_date':'2015-1-1',
@@ -668,7 +693,7 @@ class DeliveryLineSelectFormTest(TestCase):
         dl = createTestDeliveryLine(d)
         dldata = {  'delivery_line_id': dl.id,
                     'qty': dl.qty,
-                    'delivery_no':dl.delivery.dlry_no,
+                    'delivery_no':dl.delivery.delivery_no,
                     'product': dl.product,
                     'recipient': dl.delivery.recipient,
                     }
@@ -701,7 +726,6 @@ class ModelTest(TestCase):
         self.assertEqual(second_saved_invoice.invoiceline_set.count(), 1)
         self.assertEqual(second_saved_invoice.invoiceline_set.last().product, i2l1.product)
 
-
     def test_can_save_and_retrieve_Order_and_OrderLine(self):
         first_order = Order()
         first_order.order_no = "FirstOrderNo"
@@ -733,13 +757,13 @@ class ModelTest(TestCase):
 
     def test_can_save_and_retrieve_Delivery_and_DeliveryLine(self):
         first_delivery = Delivery()
-        first_delivery.dlry_no = "FirstDeliveryNo"
+        first_delivery.delivery_no = "FirstDeliveryNo"
         first_delivery.recipient = "FirstCustomer"
         first_delivery.dispatch_date='2015-05-05'
         first_delivery.save()
 
         second_delivery = Delivery()
-        second_delivery.dlry_no = "2ndDeliveryNo"
+        second_delivery.delivery_no = "2ndDeliveryNo"
         second_delivery.recipient = "2ndCustomer"
         second_delivery.dispatch_date='2015-05-10'
         second_delivery.save()
@@ -766,8 +790,20 @@ class ModelTest(TestCase):
 
         first_saved_delivery = saved_deliveries[0]
         second_saved_delivery = saved_deliveries[1]
-        self.assertEqual(first_saved_delivery.dlry_no, 'FirstDeliveryNo')
-        self.assertEqual(second_saved_delivery.dlry_no, '2ndDeliveryNo')
+        self.assertEqual(first_saved_delivery.delivery_no, 'FirstDeliveryNo')
+        self.assertEqual(second_saved_delivery.delivery_no, '2ndDeliveryNo')
         self.assertEqual(second_saved_delivery.deliveryline_set.count(), 2)
         self.assertEqual(second_saved_delivery.deliveryline_set.last().product, 'aGuide')
         self.assertEqual(second_saved_delivery.deliveryline_set.first().order_line_id, ol.id)
+
+    def test_can_save_and_retrieve_Product(self):
+        p1 = createTestProduct()
+        p2 = createTestProduct()
+
+        saved_products = Product.objects.all()
+        self.assertEqual(saved_products.count(), 2)
+
+        first_saved_product = saved_products[0]
+        second_saved_product = saved_products[1]
+        self.assertEqual(first_saved_product.own_product_no, p1.own_product_no)
+        self.assertEqual(second_saved_product.own_product_no, p2.own_product_no)

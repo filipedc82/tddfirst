@@ -17,6 +17,11 @@ class InvoiceListView(generic.ListView):
     model = Invoice
     template_name = 'invoice_list.html'
 
+class ProductListView(generic.ListView):
+    model = Product
+    template_name = 'product_list.html'
+
+
 class DeliveryDetailView(generic.DetailView):
     model = Delivery
     template_name='delivery_detail.html'
@@ -147,7 +152,7 @@ def add_invoice(request, dlsid):
         data = []
         for dline in dlines:
             data.append({'order_no': dline.order_line.order.order_no,
-                         'delivery_no': dline.delivery.dlry_no,
+                         'delivery_no': dline.delivery.delivery_no,
                          'product':dline.product,
                          'qty': dline.qty,
                          'unit_price': dline.order_line.unit_price,
@@ -176,7 +181,7 @@ def select_dl(request):
         for dl in DeliveryLine.objects.all():
              data.append({'delivery_line_id': dl.id,
                           'qty': dl.qty,
-                          'delivery_no':dl.delivery.dlry_no,
+                          'delivery_no':dl.delivery.delivery_no,
                           'product': dl.product,
                           'recipient': dl.delivery.recipient,
                           'delivery_date':dl.delivery.dispatch_date

@@ -22,17 +22,19 @@ class OrderLine(models.Model):
     def __str__(self):
         return str(self.id)
 
+
 class Delivery(models.Model):
-    dlry_no = models.TextField(max_length=50)
+    delivery_no = models.TextField(max_length=50)
     recipient = models.TextField(max_length=50)
     sender = models.TextField(max_length=50)
     dispatch_date = models.DateField()
 
     def __str__(self):
-        return self.dlry_no
+        return self.delivery_no
 
     def get_absolute_url(self):
         return reverse('delivery_detail', kwargs={'pk': self.pk})
+
 
 class DeliveryLine(models.Model):
     delivery = models.ForeignKey(Delivery)
@@ -42,6 +44,7 @@ class DeliveryLine(models.Model):
 
     def __str__(self):
         return str(self.id)
+
 
 class Invoice(models.Model):
     invoice_no = models.TextField(max_length=50)
@@ -60,6 +63,7 @@ class Invoice(models.Model):
             value = value + float(il.get_line_value())
         return str(value);
 
+
 class InvoiceLine(models.Model):
     invoice = models.ForeignKey(Invoice)
     order_line = models.ForeignKey(OrderLine, blank=True, null=True)
@@ -68,11 +72,25 @@ class InvoiceLine(models.Model):
     qty = models.FloatField()
     unit_price = models.FloatField()
 
-
-
     def __str__(self):
         return str(self.id)
 
-
     def get_line_value(self):
         return str(self.qty*self.unit_price)
+
+class Product(models.Model):
+    PRODUCT_GROUPS = (
+        ('VG', 'Valve Guide'),
+        ('VS', 'Valve Seat'),
+        ('EV', 'Engine Valve'),
+        ('EVO', 'Engine Valve Other'),
+        ('NGP', '(Normalien)Guide Pin'),
+        ('NLS', '(Normalien)Limit Switch'),
+        ('NLS', '(Normalien)Other'),
+        ('O', 'Other'),
+    )
+    product_group = models.CharField(max_length=50, choices=PRODUCT_GROUPS, default="O")
+    own_product_no = models.CharField(max_length=50)
+
+    def __str__(self):
+        return str(self.own_product_no)

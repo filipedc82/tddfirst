@@ -11,11 +11,40 @@ from orderlist.tests import createTestOrderLine, \
                             createTestDelivery, \
                             createTestDeliveryLine, \
                             createTestInvoice, \
-                            createTestInvoiceLine
+                            createTestInvoiceLine, \
+                            createTestProduct
 
 
 @override_settings(DEBUG=True)
-class NewVisitorTest(StaticLiveServerTestCase):
+class ProductListTest(StaticLiveServerTestCase):
+
+    def setUp(self):
+        self.browser = webdriver.Firefox()
+        self.browser.implicitly_wait(3)
+        #setattr(settings, 'DEBUG', true)
+
+    def tearDown(self):
+        self.browser.quit()
+      #  pass
+
+
+    def test_can_see_product_info(self):
+        createTestProduct()
+        # Klaus opens the browser and goes to the products page
+        self.browser.get(self.live_server_url+ "/products/")
+        self.browser.set_window_size(1024, 768)
+
+        # He notices the page title Product List and the styled page, and sees one product
+        self.assertIn('Product List', self.browser.title)
+        header_text = self.browser.find_element_by_tag_name('h1').text
+        self.assertIn('Product', header_text)
+        self.assertGreater(self.browser.find_element_by_tag_name('h1').location['x'], 10)
+        self.assertIn("MyProduct", self.browser.find_element_by_tag_name('body').text)
+
+        self.fail("Finish the test")
+
+@override_settings(DEBUG=True)
+class OrderListTest(StaticLiveServerTestCase):
 
     def setUp(self):
         self.browser = webdriver.Firefox()
@@ -157,8 +186,8 @@ class NewVisitorTest(StaticLiveServerTestCase):
 
 
         # A text field is showing prompting to enter the Delivery no, dispatch date, sender and recipient name
-        dlry_no_field = self.browser.find_element_by_id('id_dlry_no')
-        self.assertEqual(dlry_no_field.get_attribute('placeholder'), 'Delivery Number')
+        delivery_no_field = self.browser.find_element_by_id('id_delivery_no')
+        self.assertEqual(delivery_no_field.get_attribute('placeholder'), 'Delivery Number')
         recipient_field = self.browser.find_element_by_id('id_recipient')
         self.assertEqual(recipient_field.get_attribute('placeholder'), 'Recipient')
         sender_field = self.browser.find_element_by_id('id_sender')
@@ -168,7 +197,7 @@ class NewVisitorTest(StaticLiveServerTestCase):
 
 
         # He enters header data, changes a qty, adds a line  and clicks the Button "Save delivery"
-        dlry_no_field.send_keys("Dlry08/15")
+        delivery_no_field.send_keys("Dlry08/15")
         recipient_field.send_keys("MWH")
         sender_field.send_keys("DCA")
         date_field.send_keys("2015-07-07")

@@ -22,6 +22,8 @@ urlpatterns = patterns('',
     url(r'^invoices/add/(?P<dlsid>.+)$', 'orderlist.views.add_invoice', name='add_invoice'),
     url(r'^invoices/add/$', 'orderlist.views.select_dl', name='select_dl'),
 
+    url(r'^products/$', views.ProductListView.as_view(), name='product_list'),
+
 )
 
 

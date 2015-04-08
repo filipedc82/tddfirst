@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block  title_text%} Delivery {{delivery.dlry_no}}{% endblock %}
+{% block  title_text%} Delivery {{delivery.delivery_no}}{% endblock %}
 {% block  header_text%} Delivery details {% endblock %}
 
 {% block  page_content%}
@@ -8,7 +8,7 @@
 
 
     Customer: {{ delivery.recipient }}<br/>
-    Delivery No: {{ delivery.dlry_no }}<br/>
+    Delivery No: {{ delivery.delivery_no }}<br/>
     Sender: {{ delivery.sender }}<br/>
     Dispatch Date: {{ delivery.dispatch_date }}<br/>
 

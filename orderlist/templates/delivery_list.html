@@ -16,7 +16,7 @@
              {% for dlry in object_list %}
                  <tr>
                     <td> {{ dlry.recipient }}</td>
-                    <td> <a href="/deliveries/{{ dlry.id }}/">{{ dlry.dlry_no }}</a></td>
+                    <td> <a href="/deliveries/{{ dlry.id }}/">{{ dlry.delivery_no }}</a></td>
                     <td> {{ dlry.sender }}</td>
                     <td> {{ dlry.dispatch_date }}</td>
                 </tr>
