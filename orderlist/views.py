@@ -18,7 +18,7 @@ class InvoiceListView(generic.ListView):
     template_name = 'invoice_list.html'
 
 class ProductListView(generic.ListView):
-    model = Product
+    model = OwnProduct
     template_name = 'product_list.html'
 
 

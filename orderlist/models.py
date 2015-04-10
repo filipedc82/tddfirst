@@ -78,7 +78,7 @@ class InvoiceLine(models.Model):
     def get_line_value(self):
         return str(self.qty*self.unit_price)
 
-class Product(models.Model):
+class OwnProduct(models.Model):
     PRODUCT_GROUPS = (
         ('VG', 'Valve Guide'),
         ('VS', 'Valve Seat'),

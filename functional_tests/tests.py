@@ -3,6 +3,7 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium import webdriver
 import unittest
 import time
+import sys
 from selenium.webdriver.common.keys import Keys
 from django.test.utils import override_settings
 from orderlist.models import *
@@ -18,6 +19,20 @@ from orderlist.tests import createTestOrderLine, \
 @override_settings(DEBUG=True)
 class ProductListTest(StaticLiveServerTestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        for arg in sys.argv:
+            if 'liveserver' in arg:
+                cls.server_url = 'http://' + arg.split('=')[1]  #4
+                return  #5
+        super().setUpClass()  #6
+        cls.server_url = cls.live_server_url
+
+    @classmethod
+    def tearDownClass(cls):
+        if cls.server_url == cls.live_server_url:
+            super().tearDownClass()
+
     def setUp(self):
         self.browser = webdriver.Firefox()
         self.browser.implicitly_wait(3)
@@ -31,7 +46,7 @@ class ProductListTest(StaticLiveServerTestCase):
     def test_can_see_product_info(self):
         createTestProduct()
         # Klaus opens the browser and goes to the products page
-        self.browser.get(self.live_server_url+ "/products/")
+        self.browser.get(self.server_url+ "/products/")
         self.browser.set_window_size(1024, 768)
 
         # He notices the page title Product List and the styled page, and sees one product
@@ -45,6 +60,20 @@ class ProductListTest(StaticLiveServerTestCase):
 
 @override_settings(DEBUG=True)
 class OrderListTest(StaticLiveServerTestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        for arg in sys.argv:
+            if 'liveserver' in arg:
+                cls.server_url = 'http://' + arg.split('=')[1]  #4
+                return  #5
+        super().setUpClass()  #6
+        cls.server_url = cls.live_server_url
+
+    @classmethod
+    def tearDownClass(cls):
+        if cls.server_url == cls.live_server_url:
+            super().tearDownClass()
 
     def setUp(self):
         self.browser = webdriver.Firefox()
@@ -76,7 +105,7 @@ class OrderListTest(StaticLiveServerTestCase):
 
 
         # Klaus opens the browser and goes to the invoice page
-        self.browser.get(self.live_server_url+ "/invoices/")
+        self.browser.get(self.server_url+ "/invoices/")
         self.browser.set_window_size(1024, 768)
 
         # He notices the page title Invoice List and the styled page, and sees one invoice
@@ -96,7 +125,7 @@ class OrderListTest(StaticLiveServerTestCase):
         # He clicks the link to create a new Invoice
         create_link = self.browser.find_element_by_id('create_invoice_link')
         self.assertEqual(create_link.text,'Create new invoice')
-        self.browser.get(self.live_server_url+ "/invoices/add/")
+        self.browser.get(self.server_url+ "/invoices/add/")
 
         # A window titled "select delivery lines for invoice" is displayed displaying the six delivery lines
         self.assertIn('Select Delivery Lines for new invoice', self.browser.find_element_by_tag_name('h1').text)
@@ -147,7 +176,7 @@ class OrderListTest(StaticLiveServerTestCase):
         ol4 = createTestOrderLine(o2)
 
         # Klaus opens the browser and goes to the delivery page
-        self.browser.get(self.live_server_url+ "/deliveries/")
+        self.browser.get(self.server_url+ "/deliveries/")
         self.browser.set_window_size(1024, 768)
 
 
@@ -160,7 +189,7 @@ class OrderListTest(StaticLiveServerTestCase):
         # He clicks the link to create a new Delivery
         create_link = self.browser.find_element_by_id('create_delivery_link')
         self.assertEqual(create_link.text,'Create new delivery')
-        self.browser.get(self.live_server_url+ "/deliveries/add/")
+        self.browser.get(self.server_url+ "/deliveries/add/")
 
         # A window titled "select order lines for delivery" is displayed displaying the four open order lines (orderno, product, open_qty, dlry_date)
 
@@ -305,7 +334,7 @@ class OrderListTest(StaticLiveServerTestCase):
         )
 
         # He reloads the page and still finds the same order.
-        self.browser.get(self.live_server_url+ "/orders")
+        self.browser.get(self.server_url+ "/orders")
 #        time.sleep(10)
         table = self.browser.find_element_by_id('id_order_table')
         cells = table.find_elements_by_tag_name('td')

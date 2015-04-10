@@ -5,6 +5,7 @@ from django.http import HttpRequest
 from orderlist.models import *
 from orderlist.views import *
 from orderlist.forms import *
+import sys
 
 ## HELPERS
 def createTestOrder():
@@ -64,10 +65,12 @@ def createTestInvoiceLine(my_invoice):
     il.save()
     return il
 
-def createTestProduct(product_group="VG"):
-    p = Product()
+def createTestProduct(product_group="VG", opno=None):
+    if opno is None:
+        opno = "MyProduct%s" % OwnProduct.objects.count()
+    p = OwnProduct()
     p.product_group = product_group
-    p.own_product_no = "MyProduct"+str(Product.objects.count())
+    p.own_product_no = opno
     p.save()
     return p
 
@@ -603,6 +606,9 @@ class OrderListPageTest(TestCase):
 
 ## TESTS FOR FORMS
 class OrderFormTest(TestCase):
+    def test_virtualenv(self):
+        print(sys.prefix)
+        self.fail()
 
     def test_form_validation_for_blank_items(self):
         form = OrderForm(data={'order': ''})
@@ -800,7 +806,7 @@ class ModelTest(TestCase):
         p1 = createTestProduct()
         p2 = createTestProduct()
 
-        saved_products = Product.objects.all()
+        saved_products = OwnProduct.objects.all()
         self.assertEqual(saved_products.count(), 2)
 
         first_saved_product = saved_products[0]
