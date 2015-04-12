@@ -608,7 +608,6 @@ class OrderListPageTest(TestCase):
 class OrderFormTest(TestCase):
     def test_virtualenv(self):
         print(sys.prefix)
-        self.fail()
 
     def test_form_validation_for_blank_items(self):
         form = OrderForm(data={'order': ''})
