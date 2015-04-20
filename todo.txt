@@ -1,3 +1,16 @@
 List of things to do
 TODO OrderLineForm display error msgs.
-TODO
+TODO Splilt up application into several apps: orders, deliveries, invoices, products
+
+TODO Check out django-extensions for validate_template
+TODO Experiment with django-crispy-forms
+TODO Use generic views from django-extra-views, esp. CreateWithInlinesView and UpdateWithInlinesView
+TODO Use multiple settings files extending base.by
+TODO MAke abstract Timestampedmodel class like in twoscoops p 62
+TODO Check nulls and blanks as in twoscoops p 66
+TODO Split up application in several apps
+TODO CHeck authentication (potentially with django-braces.LoginRequiredMixin)
+TODO Add Message framework to base.html (as in twoscoops p 112)
+TODO Refactor deliverylineselectform and orderlineselectform to subclass deliverylineform and orderlineform
+TODO Refactor add_delivery and add_invoice views to use inlineforms, maybe using CreateWithInlinesView from django-extra-views
+TODO Check templates for implicit queries, see twoscoops p 152

@@ -90,7 +90,6 @@ def add_delivery(request, olsid):
 
     else:
         dform = DeliveryForm()
-
         olineids = olsid.split(",")[:-1]
         #todo: make robust to cope with forgotten trailing comma
 
