@@ -38,6 +38,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'debug_toolbar',
     'orderlist',
+    'products',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (

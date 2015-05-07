@@ -6,7 +6,7 @@ import time
 import sys
 from selenium.webdriver.common.keys import Keys
 from django.test.utils import override_settings
-from orderlist.models import *
+from orderlist.models import Order,OrderLine,Delivery, DeliveryLine, Invoice, InvoiceLine, OwnProduct
 from orderlist.tests import createTestOrderLine, \
                             createTestOrder, \
                             createTestDelivery, \

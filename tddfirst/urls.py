@@ -1,6 +1,8 @@
 from django.conf.urls import patterns, include, url
 #from django.contrib import admin
 from orderlist import views
+# from products import views
+
 
 urlpatterns = patterns('',
     # Examples:
@@ -23,6 +25,7 @@ urlpatterns = patterns('',
     url(r'^invoices/add/$', 'orderlist.views.select_dl', name='select_dl'),
 
     url(r'^products/$', views.ProductListView.as_view(), name='product_list'),
+    url(r'^product2/$', views.ProductListView.as_view(), name='product_list'),
 
 )
 

@@ -2,9 +2,13 @@ from django.core.urlresolvers import resolve
 from django.template.loader import render_to_string
 from django.test import TestCase, Client
 from django.http import HttpRequest
-from orderlist.models import *
-from orderlist.views import *
-from orderlist.forms import *
+from django.forms.formsets import formset_factory
+import django
+
+from orderlist.models import Order,OrderLine,Delivery, DeliveryLine, Invoice, InvoiceLine, OwnProduct
+from orderlist import views
+from orderlist import forms
+
 import sys
 
 ## HELPERS
@@ -80,12 +84,12 @@ class HomePageTest(TestCase):
 
     def test_root_url_resolves_to_home_page_view(self):
         found = resolve('/')
-        self.assertEqual(found.func, home_page)
+        self.assertEqual(found.func, views.home_page)
 
 
     def test_home_page_returns_correct_html(self):
         request = HttpRequest()
-        response = home_page(request)
+        response = views.home_page(request)
         expected_html = render_to_string('home.html')
         self.assertEqual(response.content.decode(), expected_html)
 
@@ -167,7 +171,7 @@ class InvoiceSelectDLPageTest(TestCase):
 
     def test_select_dl_url_resolves_to_select_ol_view(self):
         found = resolve('/invoices/add/')
-        self.assertEqual(found.func, select_dl)
+        self.assertEqual(found.func, views.select_dl)
 
     def test_select_dl_page_returns_correct_html_template(self):
         c = Client()
@@ -180,7 +184,7 @@ class InvoiceSelectDLPageTest(TestCase):
         c = Client()
         response = c.get('/invoices/add/')
         dlsformcandidate= response.context['delivery_line_select_forms'][0]
-        self.assertIs(type(dlsformcandidate), DeliveryLineSelectForm) 	#Sanity-check that your form is rendered
+        self.assertIs(type(dlsformcandidate), forms.DeliveryLineSelectForm) 	#Sanity-check that your form is rendered
         self.assertIn(delivery.delivery_no, response.content.decode())
         self.assertIn(dl.product, response.content.decode())
 
@@ -223,7 +227,7 @@ class InvoiceAddPageTest(TestCase):
 
     def test_add_invoice_url_resolves_to_add_delivery_view(self):
         found = resolve('/invoices/add/1,2,')
-        self.assertEqual(found.func, add_invoice)
+        self.assertEqual(found.func, views.add_invoice)
 
     def test_add_invoice_url_returns_correct_html(self):
         d = createTestDelivery()
@@ -238,9 +242,9 @@ class InvoiceAddPageTest(TestCase):
         dl2 = createTestDeliveryLine(d)
         c = Client()
         response = c.get('/invoices/add/2,1,')
-        self.assertIsInstance(response.context['iform'], InvoiceForm) 	#Sanity-check that your form is rendered, and its errors are displayed.
+        self.assertIsInstance(response.context['iform'], forms.InvoiceForm) 	#Sanity-check that your form is rendered, and its errors are displayed.
         dlformcandidate= response.context['ilforms'][0]
-        self.assertIs(type(dlformcandidate), InvoiceLineForm) 	#Sanity-check that your form is rendered
+        self.assertIs(type(dlformcandidate), forms.InvoiceLineForm) 	#Sanity-check that your form is rendered
 
     def test_add_invoice_page_can_handle_POST_correct(self):
         d = createTestDelivery()
@@ -358,7 +362,7 @@ class DeliveryAddPageTest(TestCase):
 
     def test_add_delivery_url_resolves_to_add_delivery_view(self):
         found = resolve('/deliveries/add/1,2,')
-        self.assertEqual(found.func, add_delivery)
+        self.assertEqual(found.func, views.add_delivery)
 
     def test_add_delivery_url_returns_correct_html(self):
         d = createTestDelivery()
@@ -375,9 +379,9 @@ class DeliveryAddPageTest(TestCase):
         ol2 = createTestOrderLine(o)
         c = Client()
         response = c.get('/deliveries/add/2,1,')
-        self.assertIsInstance(response.context['dform'], DeliveryForm) 	#Sanity-check that your form is rendered, and its errors are displayed.
+        self.assertIsInstance(response.context['dform'], forms.DeliveryForm) 	#Sanity-check that your form is rendered, and its errors are displayed.
         dlformcandidate= response.context['dlforms'][0]
-        self.assertIs(type(dlformcandidate), DeliveryLineForm) 	#Sanity-check that your form is rendered
+        self.assertIs(type(dlformcandidate), forms.DeliveryLineForm) 	#Sanity-check that your form is rendered
 
 
 
@@ -432,13 +436,13 @@ class DeliverySelectOLPageTest(TestCase):
 
     def test_select_ol_url_resolves_to_select_ol_view(self):
         found = resolve('/deliveries/add/')
-        self.assertEqual(found.func, select_ol)
+        self.assertEqual(found.func, views.select_ol)
 
     def test_select_ol_page_returns_correct_html(self):
         c = Client()
         o = createTestOrder()
         ol = createTestOrderLine(o)
-        ol_select_form = OrderLineSelectForm({'orderLine': ol})
+        ol_select_form = forms.OrderLineSelectForm({'orderLine': ol})
         response = c.get('/deliveries/add/')
         self.assertTemplateUsed(response, 'select_ol.html')  # correct template
         # expected_html = render_to_string('select_ol.html'})
@@ -450,7 +454,7 @@ class DeliverySelectOLPageTest(TestCase):
         c = Client()
         response = c.get('/deliveries/add/')
         olsformcandidate= response.context['order_line_select_forms'][0]
-        self.assertIs(type(olsformcandidate), OrderLineSelectForm) 	#Sanity-check that your form is rendered
+        self.assertIs(type(olsformcandidate), forms.OrderLineSelectForm) 	#Sanity-check that your form is rendered
         self.assertIn(order.order_no, response.content.decode())
         self.assertIn(ol.product, response.content.decode())
 
@@ -497,7 +501,7 @@ class OrderDetailTest(TestCase):
         response = c.get('/orders/'+str(order.id)+'/')
         self.assertTemplateUsed(response, 'order_detail.html') #correct template
         self.assertEqual(response.context['order'], order) # correct order in context
-        expected_html = render_to_string('order_detail.html', {'order': order, 'orderLineform':OrderLineForm()})
+        expected_html = render_to_string('order_detail.html', {'order': order, 'orderLineform':forms.OrderLineForm()})
         #TODO: self.assertEqual(response.content.decode(), expected_html) # correct html
 
     def test_order_detail_page_shows_new_order(self):
@@ -518,7 +522,7 @@ class OrderDetailTest(TestCase):
         order = createTestOrder()
         c = Client()
         response = c.get('/orders/'+str(order.id)+'/')
-        self.assertIsInstance(response.context['orderLineForm'], OrderLineForm) 	#Sanity-check that your form is rendered, and its errors are displayed.
+        self.assertIsInstance(response.context['orderLineForm'], forms.OrderLineForm) 	#Sanity-check that your form is rendered, and its errors are displayed.
 
     def test_order_detail_page_can_handle_POST_correct(self):
         order = createTestOrder()
@@ -542,22 +546,22 @@ class OrderAddPageTest(TestCase):
 
     def test_add_order_url_resolves_to_add_order_view(self):
         found = resolve('/orders/add/')
-        self.assertEqual(found.func, add_order)
+        self.assertEqual(found.func, views.add_order)
 
     def test_add_order_page_returns_correct_html(self):
         request = HttpRequest()
         request.method = 'GET'
-        response = add_order(request)
+        response = views.add_order(request)
         #c = Client()
         #response = c.get('/orders/add/')
         self.assertTemplateUsed(response, 'add_order.html') #correct template
-        expected_html = render_to_string('add_order.html', {'form': OrderForm()})
+        expected_html = render_to_string('add_order.html', {'form': forms.OrderForm()})
         self.assertEqual(response.content.decode(), expected_html)
 
     def test_add_order_page_renders_correct_form(self):
         c = Client()
         response = c.get('/orders/add/')
-        self.assertIsInstance(response.context['form'], OrderForm) 	#Sanity-check that your form is rendered, and its errors are displayed.
+        self.assertIsInstance(response.context['form'], forms.OrderForm) 	#Sanity-check that your form is rendered, and its errors are displayed.
 
     def test_add_order_page_can_handle_POST_correct(self):
         c = Client()
@@ -610,19 +614,19 @@ class OrderFormTest(TestCase):
         print(sys.prefix)
 
     def test_form_validation_for_blank_items(self):
-        form = OrderForm(data={'order': ''})
+        form = forms.OrderForm(data={'order': ''})
         self.assertFalse(form.is_valid())
 
 class OrderLineFormTest(TestCase):
 
     def test_line_form_validation_for_blank_items(self):
-        form = OrderLineForm(data={'product': ''})
+        form = forms.OrderLineForm(data={'product': ''})
         self.assertFalse(form.is_valid())
 
 class OrderLineSelectFormTest(TestCase):
 
     def test_line_form_validation_for_blank_items(self):
-        form = OrderLineSelectForm(data={'product': ''})
+        form = forms.OrderLineSelectForm(data={'product': ''})
         self.assertFalse(form.is_valid())
 
     def test_ol_select_form_elements_ro_except_select(self):
@@ -634,31 +638,31 @@ class OrderLineSelectFormTest(TestCase):
                     'product': ol.product,
                     'customer': ol.order.customer,
                     }
-        olsform = OrderLineSelectForm(oldata)
+        olsform = forms.OrderLineSelectForm(oldata)
         self.assertTrue(olsform.fields['product'].widget.attrs.get("class")=="form-control-static")
         self.assertTrue(olsform.fields['order_no'].widget.attrs.get("class")=="form-control-static")
         self.assertTrue(olsform.fields['order_qty'].widget.attrs.get("class")=="form-control-static")
         self.assertTrue(olsform.fields['customer'].widget.attrs.get("class")=="form-control-static")
-        self.assertIsInstance(olsform.fields['order_line_id'].widget, widgets.HiddenInput)
-        self.assertIsInstance(olsform.fields['selected'], BooleanField)
+        self.assertIsInstance(olsform.fields['order_line_id'].widget, django.forms.HiddenInput)
+        self.assertIsInstance(olsform.fields['selected'], django.forms.BooleanField)
 
 
 
 class DeliveryFormTest(TestCase):
 
     def test_form_validation_for_blank_items(self):
-        form = DeliveryForm(data={})
+        form = forms.DeliveryForm(data={})
         self.assertFalse(form.is_valid())
 
 class DeliveryLineFormTest(TestCase):
     def test_form_validation_for_blank_items(self):
-        form = DeliveryLineForm(data={})
+        form = forms.DeliveryLineForm(data={})
         self.assertFalse(form.is_valid())
 
     def test_dl_formset(self):
         ol = createTestOrderLine(createTestOrder())
         ol2 = createTestOrderLine(createTestOrder())
-        dlformset = formset_factory(DeliveryLineForm, extra=2)
+        dlformset = formset_factory(forms.DeliveryLineForm, extra=2)
 
         data = {'delivery_no':'DLRY666',
                 'recipient':'myRecepient',
@@ -690,7 +694,7 @@ class DeliveryLineFormTest(TestCase):
 class DeliveryLineSelectFormTest(TestCase):
 
     def test_line_form_validation_for_blank_items(self):
-        form = DeliveryLineSelectForm(data={'product': ''})
+        form = forms.DeliveryLineSelectForm(data={'product': ''})
         self.assertFalse(form.is_valid())
 
     def test_dl_select_form_elements_ro_except_select(self):
@@ -702,13 +706,13 @@ class DeliveryLineSelectFormTest(TestCase):
                     'product': dl.product,
                     'recipient': dl.delivery.recipient,
                     }
-        dlsform = DeliveryLineSelectForm(dldata)
+        dlsform = forms.DeliveryLineSelectForm(dldata)
         self.assertTrue(dlsform.fields['delivery_no'].widget.attrs.get("class")=="form-control-static")
         self.assertTrue(dlsform.fields['product'].widget.attrs.get("class")=="form-control-static")
         self.assertTrue(dlsform.fields['qty'].widget.attrs.get("class")=="form-control-static")
         self.assertTrue(dlsform.fields['recipient'].widget.attrs.get("class")=="form-control-static")
-        self.assertIsInstance(dlsform.fields['delivery_line_id'].widget, widgets.HiddenInput)
-        self.assertIsInstance(dlsform.fields['selected'], BooleanField)
+        self.assertIsInstance(dlsform.fields['delivery_line_id'].widget, django.forms.HiddenInput)
+        self.assertIsInstance(dlsform.fields['selected'], django.forms.BooleanField)
 
 ##MODELTESTS
 class ModelTest(TestCase):

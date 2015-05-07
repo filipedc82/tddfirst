@@ -75,6 +75,7 @@ class InvoiceLine(models.Model):
     def __str__(self):
         return str(self.id)
 
+# todo: Check @cached Property
     def get_line_value(self):
         return str(self.qty*self.unit_price)
 

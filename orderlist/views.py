@@ -1,50 +1,50 @@
 from django.shortcuts import redirect, render, get_object_or_404, render_to_response
 from django.http import HttpResponse, HttpRequest
 from django.views import generic
-from orderlist.models import *
-from orderlist.forms import *
+from orderlist import models
+from orderlist import forms
 from django.forms.formsets import formset_factory
 
 class OrderListView(generic.ListView):
-    model = Order
+    model = models.Order
     template_name = 'order_list.html'
 
 class DeliveryListView(generic.ListView):
-    model = Delivery
+    model = models.Delivery
     template_name = 'delivery_list.html'
 
 class InvoiceListView(generic.ListView):
-    model = Invoice
+    model = models.Invoice
     template_name = 'invoice_list.html'
 
 class ProductListView(generic.ListView):
-    model = OwnProduct
+    model = models.OwnProduct
     template_name = 'product_list.html'
 
 
 class DeliveryDetailView(generic.DetailView):
-    model = Delivery
+    model = models.Delivery
     template_name='delivery_detail.html'
 
 class InvoiceDetailView(generic.DetailView):
-    model = Invoice
+    model = models.Invoice
     template_name='invoice_detail.html'
 
 
 class OrderDetailView(generic.DetailView):
-    model = Order
+    model = models.Order
     template_name = 'order_detail.html'
 
     def get_context_data(self, **kwargs):
         context = super(OrderDetailView, self).get_context_data(**kwargs)
-        ol = OrderLine(order=context.get('order'))
-        context['orderLineForm'] = OrderLineForm(instance=ol)
+        ol = models.OrderLine(order=context.get('order'))
+        context['orderLineForm'] = forms.OrderLineForm(instance=ol)
         return context
 
 
 
     def post(self, *args, **kwargs):
-        olform = OrderLineForm(self.request.POST)
+        olform = forms.OrderLineForm(self.request.POST)
         if olform.is_valid():
             new_order_line = olform.save(commit=True)
             return redirect('/orders/'+str(self.request.POST.get('order'))+'/')
@@ -65,16 +65,16 @@ class OrderDetailView(generic.DetailView):
 #     return render(request, 'order_detail.html's, context_dict)
 
 def add_delivery(request, olsid):
-    dlformset = formset_factory(DeliveryLineForm, extra=2)
+    dlformset = formset_factory(forms.DeliveryLineForm, extra=2)
     if request.method == 'POST':
-        dform = DeliveryForm(request.POST)
+        dform = forms.DeliveryForm(request.POST)
         dlforms = dlformset(request.POST, request.FILES)
         if (dform.is_valid()):
             if (dlforms.is_valid()):
                 newD= dform.save(commit=True)
                 for dataset in dlforms.cleaned_data:
                     if dataset:
-                        newDL = DeliveryLine()
+                        newDL = models.DeliveryLine()
                         newDL.delivery = newD
                         newDL.product= dataset.get('product')
                         newDL.qty = dataset.get('qty')
@@ -89,13 +89,13 @@ def add_delivery(request, olsid):
             print(dform.errors)
 
     else:
-        dform = DeliveryForm()
+        dform = forms.DeliveryForm()
         olineids = olsid.split(",")[:-1]
         #todo: make robust to cope with forgotten trailing comma
 
         olines = []
         for olineid in olineids:
-            olines.append(OrderLine.objects.get(pk=olineid))
+            olines.append(models.OrderLine.objects.get(pk=olineid))
         data = []
         for oline in olines:
             data.append({'order_no': oline.order.order_no,
@@ -110,9 +110,9 @@ def add_delivery(request, olsid):
 
 
 def add_invoice(request, dlsid):
-    ilformset = formset_factory(InvoiceLineForm, extra=2)
+    ilformset = formset_factory(forms.InvoiceLineForm, extra=2)
     if request.method == 'POST':
-        iform = InvoiceForm(request.POST)
+        iform = forms.InvoiceForm(request.POST)
         ilforms = ilformset(request.POST, request.FILES)
         if (iform.is_valid()):
             print("ilforms: "+str(ilforms))
@@ -121,7 +121,7 @@ def add_invoice(request, dlsid):
                 newI= iform.save(commit=True)
                 for dataset in ilforms.cleaned_data:
                     if dataset:
-                        newIL = InvoiceLine()
+                        newIL = models.InvoiceLine()
                         newIL.invoice = newI
                         newIL.product= dataset.get('product')
                         newIL.qty = dataset.get('qty')
@@ -140,14 +140,14 @@ def add_invoice(request, dlsid):
             print("iforms errors: "+str(iform.errors))
 
     else:
-        iform = InvoiceForm()
+        iform = forms.InvoiceForm()
 
         dlineids = dlsid.split(",")[:-1]
         #todo: make robust to cope with forgotten trailing comma
 
         dlines = []
         for dlineid in dlineids:
-            dlines.append(DeliveryLine.objects.get(pk=dlineid))
+            dlines.append(models.DeliveryLine.objects.get(pk=dlineid))
         data = []
         for dline in dlines:
             data.append({'order_no': dline.order_line.order.order_no,
@@ -177,7 +177,7 @@ def select_dl(request):
 
     else:
         data = []
-        for dl in DeliveryLine.objects.all():
+        for dl in models.DeliveryLine.objects.all():
              data.append({'delivery_line_id': dl.id,
                           'qty': dl.qty,
                           'delivery_no':dl.delivery.delivery_no,
@@ -186,7 +186,7 @@ def select_dl(request):
                           'delivery_date':dl.delivery.dispatch_date
                           })
              print(data)
-        fs = formset_factory(DeliveryLineSelectForm, extra=0)
+        fs = formset_factory(forms.DeliveryLineSelectForm, extra=0)
         dlsforms = fs(initial = data)
         print("FORMS:")
         print(dlsforms)
@@ -206,14 +206,14 @@ def select_ol(request):
 
     else:
         data = []
-        for ol in OrderLine.objects.all():
+        for ol in models.OrderLine.objects.all():
              data.append({'order_line_id': ol.id,
                           'order_qty': ol.qty,
                           'order_no':ol.order.order_no,
                           'product': ol.product,
                           'customer': ol.order.customer,
                           })
-        fs = formset_factory(OrderLineSelectForm, extra=0)
+        fs = formset_factory(forms.OrderLineSelectForm, extra=0)
         olsforms = fs(initial = data)
 
         return render(request, 'select_ol.html', {'order_line_select_forms': olsforms })
@@ -221,7 +221,7 @@ def select_ol(request):
 
 def add_order(request):
     if request.method == 'POST':
-        form = OrderForm(request.POST)
+        form = forms.OrderForm(request.POST)
 
         if form.is_valid():
             new_order = form.save(commit=True)
@@ -230,7 +230,7 @@ def add_order(request):
         else:
             print(form.errors)
     else:
-        form = OrderForm()
+        form = forms.OrderForm()
     return render(request, 'add_order.html', {'form':form})
 
 
