@@ -1,7 +1,6 @@
 List of things to do
 TODO OrderLineForm display error msgs.
 
-TODO Make imports relative as in two scoops, move url routings
 TODO Split up application into several apps: orders, deliveries, invoices, products, core
     - Register app
     - Create urls.py and link in master urls.py

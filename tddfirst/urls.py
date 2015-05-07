@@ -2,6 +2,7 @@ from django.conf.urls import patterns, include, url
 #from django.contrib import admin
 from orderlist import views
 # from products import views
+import products
 
 
 urlpatterns = patterns('',
@@ -24,9 +25,8 @@ urlpatterns = patterns('',
     url(r'^invoices/add/(?P<dlsid>.+)$', 'orderlist.views.add_invoice', name='add_invoice'),
     url(r'^invoices/add/$', 'orderlist.views.select_dl', name='select_dl'),
 
-    url(r'^products/$', views.ProductListView.as_view(), name='product_list'),
-    url(r'^product2/$', views.ProductListView.as_view(), name='product_list'),
-
+#    url(r'^products/$', views.ProductListView.as_view(), name='product_list'),
+    url(r'^products/$', include('products.urls'), name='product_list'),
 )
 
 
